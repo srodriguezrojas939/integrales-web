@@ -3,38 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Integrales LaTeX</title>
+    <title>Calculadora de Integrales LaTeX Pro</title>
     
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
     
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #f0f2f5; }
-        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        h2 { color: #1a73e8; text-align: center; margin-bottom: 1.5rem; }
-        .input-group { position: relative; margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; box-sizing: border-box; transition: all 0.3s; font-family: monospace; }
-        input:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 10px rgba(26,115,232,0.1); }
-        button { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #1557b0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #f8fafc; color: #334155; }
+        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 600px; border: 1px solid #e2e8f0; }
+        h2 { color: #2563eb; text-align: center; margin-bottom: 1.5rem; font-weight: 800; }
+        input { width: 100%; padding: 15px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; box-sizing: border-box; transition: 0.3s; margin-bottom: 15px; }
+        input:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #1d4ed8; }
         
         #contenedor-resultado { 
             margin-top: 25px; 
-            padding: 20px; 
-            border-radius: 12px; 
-            background-color: #f8f9fa; 
-            border: 1px solid #e1e4e8;
-            min-height: 80px;
+            padding: 25px; 
+            border-radius: 15px; 
+            background-color: #ffffff; 
+            border: 2px dashed #cbd5e1;
+            min-height: 100px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow-x: auto; /* Para que integrales largas no rompan el diseño */
+            overflow-x: auto;
         }
-        .instrucciones { font-size: 0.9rem; color: #5f6368; margin-top: 20px; border-top: 1px solid #eee; pt: 15px; }
-        code { background: #f1f1f1; padding: 2px 5px; border-radius: 4px; }
+        .error { color: #ef4444; font-weight: 500; text-align: center; }
+        .loading { color: #64748b; font-style: italic; }
     </style>
 </head>
 <body>
@@ -42,54 +48,55 @@
 <div class="card">
     <h2>Calculadora de Integrales</h2>
     
-    <div class="input-group">
-        <input type="text" id="entrada" placeholder="Ej: 1/sqrt(tan(x))" onkeypress="if(event.key==='Enter') calcular()">
-    </div>
+    <input type="text" id="entrada" placeholder="Escribe aquí, ej: 1/sqrt(tan(x))" onkeypress="if(event.key==='Enter') calcular()">
     
-    <button onclick="calcular()">Resolver Integral</button>
+    <button onclick="calcular()">Calcular en LaTeX</button>
     
     <div id="contenedor-resultado">
-        <div id="salida">El resultado aparecerá aquí en formato matemático...</div>
-    </div>
-
-    <div class="instrucciones">
-        <strong>Tips de sintaxis:</strong><br>
-        • Raíz: <code>sqrt(x)</code> o <code>x^(1/2)</code><br>
-        • Fracciones: <code>1/(x^2)</code><br>
-        • Multiplicación: Siempre usa <code>*</code> (ej: <code>5*x</code>)
+        <div id="salida">El resultado aparecerá aquí...</div>
     </div>
 </div>
 
 <script>
     function calcular() {
-        const txtInput = document.getElementById('entrada').value.trim();
+        const inputRaw = document.getElementById('entrada').value.trim();
         const salida = document.getElementById('salida');
 
-        if (!txtInput) return;
+        if (!inputRaw) return;
 
-        salida.innerHTML = "Calculando...";
+        salida.innerHTML = '<span class="loading">Procesando matemáticas...</span>';
 
-        // Pequeña pausa para permitir que el navegador muestre "Calculando..." 
-        // antes de procesar integrales pesadas
+        // Pequeño retraso para que el usuario vea que algo ocurre
         setTimeout(() => {
             try {
-                // 1. Calcular la integral
-                let expresion = nerdamer(`integrate(${txtInput}, x)`);
+                // 1. Resolvemos la integral con Nerdamer
+                // Para integrales muy difíciles, Nerdamer requiere la función "integrate" explícita
+                let integral = nerdamer('integrate(' + inputRaw + ', x)');
                 
-                // 2. Convertir a formato LaTeX
-                let latexResult = expresion.toTeX();
+                // 2. Convertimos el resultado a código LaTeX
+                let resultadoLatex = integral.toTeX();
+                
+                // 3. Convertimos la entrada original a LaTeX para que se vea bien en el símbolo de integral
+                let entradaLatex = nerdamer(inputRaw).toTeX();
 
-                // 3. Preparar el HTML para MathJax
-                // Usamos $$ para modo bloque en LaTeX
-                salida.innerHTML = `$$\\int f(x)dx = ${latexResult} + C$$`;
+                // 4. Construimos la cadena final de LaTeX
+                // Usamos la sintaxis \[ ... \] que es más robusta para MathJax 3
+                salida.innerHTML = `\\[ \\int ${entradaLatex} \\, dx = ${resultadoLatex} + C \\]`;
 
-                // 4. Pedirle a MathJax que procese el nuevo contenido
-                MathJax.typesetPromise([salida]).catch((err) => console.log(err));
+                // 5. ¡PASO CLAVE!: Forzar a MathJax a re-dibujar la pantalla
+                if (window.MathJax) {
+                    MathJax.typesetPromise([salida]).then(() => {
+                        console.log("Renderizado LaTeX completado.");
+                    }).catch((err) => {
+                        salida.innerHTML = "<span class='error'>Error al renderizar símbolos.</span>";
+                    });
+                }
 
             } catch (e) {
-                salida.innerHTML = "<span style='color:red;'>❌ Error: Expresión no válida o demasiado compleja.</span>";
+                console.error(e);
+                salida.innerHTML = "<span class='error'>❌ No pude resolver esa integral.<br><small>Revisa que los paréntesis estén completos.</small></span>";
             }
-        }, 100);
+        }, 50);
     }
 </script>
 
