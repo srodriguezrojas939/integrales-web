@@ -1,11 +1,86 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Prueba GitHub Pages</title>
-  </head>
-  <body>
-    <h1>FUNCIONA 🎉</h1>
-    <p>Si ves esto, GitHub Pages está funcionando.</p>
-  </body>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Integrales</title>
+
+  <!-- Algebrite -->
+  <script src="https://cdn.jsdelivr.net/npm/algebrite@1.5.0/dist/algebrite.bundle-for-browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0;
+    }
+    pre {
+      background: #eee;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Calculadora de Integrales</h2>
+
+  <input id="f" placeholder="Ej: x^2 + 3*x">
+
+  <select id="tipo">
+    <option value="indef">Indefinida</option>
+    <option value="def">Definida</option>
+  </select>
+
+  <input id="a" placeholder="Límite inferior (solo definida)">
+  <input id="b" placeholder="Límite superior (solo definida)">
+
+  <button onclick="calc()">Resolver</button>
+
+  <pre id="out"></pre>
+</div>
+
+<script>
+function calc() {
+  try {
+    let f = document.getElementById("f").value;
+    let tipo = document.getElementById("tipo").value;
+    let out = "";
+
+    if (tipo === "indef") {
+      out = "∫(" + f + ") dx =\n";
+      out += Algebrite.integral(f).toString();
+    } else {
+      let a = document.getElementById("a").value;
+      let b = document.getElementById("b").value;
+
+      let F = Algebrite.integral(f).toString();
+      let Fb = Algebrite.run(`subst(x,${b},${F})`);
+      let Fa = Algebrite.run(`subst(x,${a},${F})`);
+
+      out =
+        "F(x) = " + F + "\n\n" +
+        "F(" + b + ") - F(" + a + ") =\n" +
+        Algebrite.run(`${Fb} - ${Fa}`);
+    }
+
+    document.getElementById("out").textContent = out;
+  } catch (e) {
+    document.getElementById("out").textContent = "Error en la expresión.";
+  }
+}
+</script>
+
+</body>
 </html>
