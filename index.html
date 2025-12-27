@@ -5,79 +5,86 @@
   <title>Calculadora de Integrales</title>
 
   <!-- Algebrite -->
-  <script src="https://cdn.jsdelivr.net/npm/algebrite@1.5.0/dist/algebrite.bundle-for-browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.5.0/algebrite.min.js"></script>
 
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px;
     }
-    .box {
+    .card {
       background: white;
-      padding: 20px;
+      padding: 25px;
+      width: 420px;
       border-radius: 8px;
-      max-width: 600px;
-      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input, select, button {
       width: 100%;
-      padding: 8px;
-      margin: 6px 0;
+      padding: 10px;
+      margin-top: 10px;
     }
-    pre {
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 15px;
       background: #eee;
       padding: 10px;
+      min-height: 40px;
+      font-family: monospace;
     }
   </style>
 </head>
+
 <body>
+  <div class="card">
+    <h2>Calculadora de Integrales</h2>
 
-<div class="box">
-  <h2>Calculadora de Integrales</h2>
+    <input id="expr" placeholder="Ej: x^2, sin(x), exp(x)">
 
-  <input id="f" placeholder="Ej: x^2 + 3*x">
+    <select id="tipo">
+      <option value="indef">Indefinida</option>
+      <option value="def">Definida</option>
+    </select>
 
-  <select id="tipo">
-    <option value="indef">Indefinida</option>
-    <option value="def">Definida</option>
-  </select>
+    <input id="a" placeholder="Límite inferior (solo definida)">
+    <input id="b" placeholder="Límite superior (solo definida)">
 
-  <input id="a" placeholder="Límite inferior (solo definida)">
-  <input id="b" placeholder="Límite superior (solo definida)">
+    <button onclick="resolver()">Resolver</button>
 
-  <button onclick="calc()">Resolver</button>
-
-  <pre id="out"></pre>
-</div>
+    <div class="result" id="resultado"></div>
+  </div>
 
 <script>
-function calc() {
+function resolver() {
+  const expr = document.getElementById("expr").value;
+  const tipo = document.getElementById("tipo").value;
+  const a = document.getElementById("a").value;
+  const b = document.getElementById("b").value;
+  const res = document.getElementById("resultado");
+
   try {
-    let f = document.getElementById("f").value;
-    let tipo = document.getElementById("tipo").value;
-    let out = "";
+    let salida = "";
 
     if (tipo === "indef") {
-      out = "∫(" + f + ") dx =\n";
-      out += Algebrite.integral(f).toString();
+      salida = Algebrite.integral(expr).toString();
     } else {
-      let a = document.getElementById("a").value;
-      let b = document.getElementById("b").value;
-
-      let F = Algebrite.integral(f).toString();
-      let Fb = Algebrite.run(`subst(x,${b},${F})`);
-      let Fa = Algebrite.run(`subst(x,${a},${F})`);
-
-      out =
-        "F(x) = " + F + "\n\n" +
-        "F(" + b + ") - F(" + a + ") =\n" +
-        Algebrite.run(`${Fb} - ${Fa}`);
+      salida = Algebrite.integral(expr, "x", a, b).toString();
     }
 
-    document.getElementById("out").textContent = out;
+    res.textContent = salida;
   } catch (e) {
-    document.getElementById("out").textContent = "Error en la expresión.";
+    res.textContent = "Error en la expresión.";
   }
 }
 </script>
