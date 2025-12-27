@@ -2,65 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora Pro de Integrales</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.4.0/algebrite.bundle-for-browser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Integrales Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #eef2f7; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h2 { color: #1a73e8; text-align: center; margin-top: 0; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s; box-sizing: border-box;}
-        input:focus { border-color: #1a73e8; }
-        button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #f0f2f5; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #1a73e8; text-align: center; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #dfe1e5; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 8px rgba(26,115,232,0.2); }
+        button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: 600; margin-top: 10px; }
         button:hover { background-color: #1557b0; }
-        #resultado { margin-top: 25px; padding: 15px; border-radius: 8px; background-color: #f8f9fa; border-left: 5px solid #1a73e8; min-height: 50px; word-wrap: break-word; }
-        .guia { font-size: 0.85rem; color: #666; margin-top: 15px; }
+        #resultado { margin-top: 20px; padding: 15px; border-radius: 10px; background-color: #f8f9fa; border-left: 5px solid #1a73e8; min-height: 40px; font-size: 1.1rem; }
+        .instrucciones { font-size: 0.85rem; color: #5f6368; margin-top: 20px; line-height: 1.5; }
+        code { background: #eee; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>Calculadora de Integrales</h2>
-        <input type="text" id="funcion" placeholder="Ejemplo: 3x^2 + cos(x)">
+        <input type="text" id="funcion" placeholder="Ejemplo: 5*x + sin(x)" onkeypress="if(event.key==='Enter') calcular()">
         <button onclick="calcular()">Calcular Integral</button>
         
-        <div id="resultado">El resultado aparecerá aquí...</div>
+        <div id="resultado">Escribe una función y presiona el botón.</div>
 
-        <div class="guia">
-            <strong>Guía rápida:</strong>
-            <ul style="padding-left: 20px;">
-                <li>Usa <code>*</code> para multiplicar: <code>2*x</code> en vez de <code>2x</code></li>
-                <li>Potencias: <code>x^2</code></li>
-                <li>Raíz cuadrada: <code>sqrt(x)</code></li>
-                <li>Funciones: <code>sin(x), cos(x), exp(x), log(x)</code></li>
-            </ul>
+        <div class="instrucciones">
+            <strong>Consejos:</strong><br>
+            • Usa <code>*</code>: <code>5*x</code> en lugar de <code>5x</code><br>
+            • Potencias: <code>x^2</code><br>
+            • Seno: <code>sin(x)</code>, Coseno: <code>cos(x)</code><br>
+            • Logaritmo: <code>log(x)</code>
         </div>
     </div>
 
     <script>
         function calcular() {
-            let input = document.getElementById('funcion').value.toLowerCase();
-            const cajaResultado = document.getElementById('resultado');
+            const inputElement = document.getElementById('funcion');
+            const resElement = document.getElementById('resultado');
+            let texto = inputElement.value.trim();
 
-            if (!input.trim()) {
-                cajaResultado.innerHTML = "⚠️ Por favor, escribe una función.";
+            if (!texto) {
+                resElement.innerHTML = "⚠️ Por favor, escribe algo.";
+                return;
+            }
+
+            // Verificar si la librería cargó
+            if (typeof Algebrite === 'undefined') {
+                resElement.innerHTML = "❌ Error técnico: La librería matemática no cargó. Revisa tu conexión a internet.";
                 return;
             }
 
             try {
-                // Pre-procesamiento para evitar errores comunes
-                let procesado = input
-                    .replace(/(\d)([a-z])/g, '$1*$2') // Convierte 2x en 2*x
-                    .replace(/sen/g, 'sin')           // Convierte sen en sin
-                    .replace(/tg/g, 'tan');           // Convierte tg en tan
+                // Limpieza básica automática
+                let procesado = texto.toLowerCase()
+                    .replace(/sen/g, 'sin')
+                    .replace(/tg/g, 'tan');
 
-                const resultado = Algebrite.integral(procesado).toString();
-                
-                if (resultado === "0" && input !== "0") {
-                    throw new Error("No se pudo integrar");
+                // Cálculo
+                let resultado = Algebrite.integral(procesado).toString();
+
+                // Si el resultado es igual al input, Algebrite no pudo resolverlo simbólicamente
+                if (resultado === procesado) {
+                    resElement.innerHTML = "❌ No se pudo encontrar una integral simple para esta expresión.";
+                } else {
+                    resElement.innerHTML = `<strong>Resultado:</strong><br><div style="margin-top:10px; color:#1a73e8; font-family:serif; font-size:1.3rem;">∫ (${texto}) dx = <br><b>${resultado} + C</b></div>`;
                 }
-
-                cajaResultado.innerHTML = `<strong>Resultado:</strong><br> ∫ (${input}) dx = <br><br> <code style="color:#d93025; font-size:1.2rem;">${resultado} + C</code>`;
-            } catch (error) {
-                cajaResultado.innerHTML = "❌ <strong>Error:</strong> No pude entender la expresión. Asegúrate de usar <code>*</code> para multiplicar (ej: 5*x).";
+            } catch (e) {
+                resElement.innerHTML = "❌ <strong>Error de sintaxis:</strong> Asegúrate de usar <code>*</code> para multiplicar y cerrar todos los paréntesis.";
             }
         }
     </script>
