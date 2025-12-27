@@ -1,93 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora de Integrales</title>
-
-  <!-- Algebrite -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.5.0/algebrite.min.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      padding-top: 40px;
-    }
-    .card {
-      background: white;
-      padding: 25px;
-      width: 420px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    .result {
-      margin-top: 15px;
-      background: #eee;
-      padding: 10px;
-      min-height: 40px;
-      font-family: monospace;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Calculadora de Integrales</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.4.0/algebrite.bundle-for-browser.min.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #f4f4f9; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #357ae8; }
+        #resultado { margin-top: 20px; font-weight: bold; color: #333; word-wrap: break-word; }
+    </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2>Calculadora de Integrales</h2>
+    <div class="card">
+        <h2>Calculadora de Integrales</h2>
+        <p>Introduce la función (ej. <code>x^2</code>):</p>
+        <input type="text" id="funcion" placeholder="x^2">
+        <button onclick="calcular()">Calcular Integral</button>
+        <div id="resultado"></div>
+    </div>
 
-    <input id="expr" placeholder="Ej: x^2, sin(x), exp(x)">
-
-    <select id="tipo">
-      <option value="indef">Indefinida</option>
-      <option value="def">Definida</option>
-    </select>
-
-    <input id="a" placeholder="Límite inferior (solo definida)">
-    <input id="b" placeholder="Límite superior (solo definida)">
-
-    <button onclick="resolver()">Resolver</button>
-
-    <div class="result" id="resultado"></div>
-  </div>
-
-<script>
-function resolver() {
-  const expr = document.getElementById("expr").value;
-  const tipo = document.getElementById("tipo").value;
-  const a = document.getElementById("a").value;
-  const b = document.getElementById("b").value;
-  const res = document.getElementById("resultado");
-
-  try {
-    let salida = "";
-
-    if (tipo === "indef") {
-      salida = Algebrite.integral(expr).toString();
-    } else {
-      salida = Algebrite.integral(expr, "x", a, b).toString();
-    }
-
-    res.textContent = salida;
-  } catch (e) {
-    res.textContent = "Error en la expresión.";
-  }
-}
-</script>
-
+    <script>
+        function calcular() {
+            const input = document.getElementById('funcion').value;
+            try {
+                // Algebrite.integral() realiza la integración simbólica
+                const resultado = Algebrite.integral(input).toString();
+                document.getElementById('resultado').innerHTML = "Resultado: <br>∫ " + input + " dx = " + resultado + " + C";
+            } catch (error) {
+                document.getElementById('resultado').innerHTML = "Error: Revisa la expresión.";
+            }
+        }
+    </script>
 </body>
 </html>
