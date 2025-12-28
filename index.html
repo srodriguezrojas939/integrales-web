@@ -28,10 +28,7 @@
         }
 
         @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         body {
@@ -44,7 +41,6 @@
             padding: 20px;
         }
 
-        /* CONTENEDOR PRINCIPAL */
         .calculadora-moderna {
             max-width: 650px;
             width: 100%;
@@ -57,7 +53,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
 
-        /* TÍTULOS */
         .header-section {
             text-align: center;
             margin-bottom: 28px;
@@ -77,20 +72,16 @@
 
         .header-section p {
             font-size: 20px;
-            font-weight: 600; /* NEGRITA APLICADA */
+            font-weight: 600;
             margin-top: 5px;
             font-family: 'Playfair Display', serif;
             color: #333;
         }
 
         @keyframes titleFadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* LABELS E INPUTS */
         label {
             display: block;
             font-size: 15px;
@@ -124,11 +115,10 @@
             gap: 15px;
         }
 
-        /* BOTONES */
         .botones-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             margin-top: 10px;
         }
 
@@ -142,7 +132,7 @@
             border-radius: 35px;
             padding: 14px 22px;
             font-family: 'Open Sans', sans-serif;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
             color: black;
@@ -155,27 +145,16 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        .boton-estilo:active {
-            transform: scale(0.98);
-        }
-
-        .boton-estilo img {
-            width: 22px;
-            height: 22px;
-        }
+        .boton-estilo img { width: 20px; height: 20px; }
 
         .boton-principal {
             background: black;
             color: white;
             border: none;
             font-weight: 600;
+            font-size: 15px;
         }
 
-        .boton-principal:hover {
-            background: #333;
-        }
-
-        /* ÁREA DE RESULTADO */
         #resultado {
             margin-top: 30px;
             padding: 25px;
@@ -188,6 +167,50 @@
             overflow-x: auto;
         }
 
+        /* --- ESTILOS DEL MODAL (CÓMO FUNCIONA) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #F2F2F2;
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 35px;
+            width: 80%;
+            max-width: 500px;
+            font-family: 'Open Sans', sans-serif;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: fadeUp 0.5s ease;
+        }
+
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            margin-top: 0;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -241,13 +264,46 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/2374/2374367.png" alt="pasos">
                 Ver paso a paso (MathDF)
             </button>
+
+            <button onclick="abrirModal()" class="boton-estilo">
+                <img src="https://cdn-icons-png.flaticon.com/512/471/471664.png" alt="info">
+                ¿Cómo funciona?
+            </button>
         </div>
 
         <div id="resultado">Esperando función...</div>
     </div>
 </div>
 
+<div id="modalInstrucciones" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModal()">&times;</span>
+        <h2>Instrucciones</h2>
+        <p>Para obtener el mejor resultado, sigue estos consejos:</p>
+        <ul>
+            <li>Usa <b>^</b> para potencias (ej: <b>x^2</b>).</li>
+            <li>Escribe los paréntesis en funciones: <b>sin(x)</b>, <b>log(x)</b>.</li>
+            <li>Para la constante π, escribe <b>pi</b>.</li>
+            <li>En integrales definidas, puedes usar números o palabras como <b>pi</b> o <b>e</b> en los límites.</li>
+            <li>El botón "Paso a paso" te mostrará el procedimiento detallado en una pestaña nueva.</li>
+        </ul>
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="cerrarModal()" class="boton-estilo boton-principal" style="width: auto; padding: 10px 30px;">Entendido</button>
+        </div>
+    </div>
+</div>
+
 <script>
+// --- LÓGICA DEL MODAL ---
+function abrirModal() { document.getElementById('modalInstrucciones').style.display = "block"; }
+function cerrarModal() { document.getElementById('modalInstrucciones').style.display = "none"; }
+
+window.onclick = function(event) {
+    let modal = document.getElementById('modalInstrucciones');
+    if (event.target == modal) { cerrarModal(); }
+}
+
+// --- LÓGICA OPERATIVA (SIN CAMBIOS) ---
 function normalizar(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().replace(/\s+/g, '');
@@ -299,15 +355,8 @@ function calcular() {
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
-    
-    if (!f) {
-        alert("Por favor, escribe una función primero.");
-        return;
-    }
-
-    const funcionLimpia = encodeURIComponent(f);
-    const url = `https://mathdf.com/int/es/?expr=${funcionLimpia}&v=${v}`;
-    window.open(url, '_blank');
+    if (!f) { alert("Por favor, escribe una función primero."); return; }
+    window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
 }
 
 document.getElementById('tipo').addEventListener('change', e => {
