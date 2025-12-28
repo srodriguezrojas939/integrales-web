@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora con Pasos MathDF</title>
+    <title>Calculadora de Integrales Pro</title>
     
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
@@ -22,94 +22,81 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; }
         .card { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 650px; border: 1px solid #e2e8f0; }
         h2 { color: var(--primary); text-align: center; margin-bottom: 1.5rem; font-weight: 800; }
-        
-        .input-area { margin-bottom: 20px; }
-        input { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 18px; box-sizing: border-box; transition: 0.3s; font-family: 'Courier New', monospace; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button, .btn-link { padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; font-weight: 700; transition: 0.2s; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
-        
+        input { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 18px; box-sizing: border-box; transition: 0.3s; text-align: center; }
+        input:focus { border-color: var(--primary); outline: none; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        button, .btn-link { padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; font-weight: 700; transition: 0.2s; text-decoration: none; display: flex; align-items: center; justify-content: center; }
         .btn-calc { background: var(--primary); color: white; }
-        .btn-steps { background: var(--secondary); color: white; display: none; } /* Oculto hasta que se calcule */
-        
-        button:hover, .btn-link:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        
-        #resultado-box { 
-            margin-top: 25px; 
-            padding: 25px; 
-            border-radius: 18px; 
-            background: #ffffff; 
-            border: 2px dashed #cbd5e1;
-            min-height: 120px;
-            overflow-x: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .footer-info { font-size: 0.85rem; color: #64748b; margin-top: 20px; text-align: center; line-height: 1.4; }
+        .btn-steps { background: var(--secondary); color: white; display: none; }
+        #resultado-box { margin-top: 25px; padding: 25px; border-radius: 18px; background: #ffffff; border: 2px solid #f1f5f9; min-height: 120px; overflow-x: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.3rem; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>Calculadora de Integrales</h2>
-    
-    <div class="input-area">
-        <input type="text" id="entrada" placeholder="Introduce la función, ej: 1/sqrt(tan(x))" onkeypress="if(event.key==='Enter') calcular()">
-    </div>
+    <input type="text" id="entrada" placeholder="Ej: ln(x+1) o sin(x)" onkeypress="if(event.key==='Enter') calcular()">
     
     <div class="btn-group">
-        <button class="btn-calc" onclick="calcular()">Calcular Resultado</button>
-        <a id="btnPasos" class="btn-link btn-steps" target="_blank">Ver paso a paso en MathDF ↗</a>
+        <button class="btn-calc" onclick="calcular()">Calcular</button>
+        <a id="btnPasos" class="btn-link btn-steps" target="_blank">Paso a paso ↗</a>
     </div>
     
     <div id="resultado-box">
-        <div id="salida">El resultado aparecerá aquí en formato LaTeX...</div>
-    </div>
-
-    <div class="footer-info">
-        Usa <b>*</b> para multiplicar (ej. <code>2*x</code>).<br>
-        El botón de pasos te redirigirá externamente a MathDF.
+        <div id="salida">Esperando función...</div>
     </div>
 </div>
 
 <script>
+    function limpiarLatex(tex) {
+        // 1. Cambiar log por ln
+        let clean = tex.replace(/\\log/g, '\\ln');
+        
+        // 2. Quitar paréntesis SOLO si dentro hay una sola letra (ej: ln(x) -> ln x)
+        // Pero mantenerlos si hay algo más complejo (ej: ln(x+1))
+        clean = clean.replace(/\\ln\\left\(([a-z0-9])\\right\)/g, '\\ln $1');
+        clean = clean.replace(/\\sin\\left\(([a-z0-9])\\right\)/g, '\\sin $1');
+        clean = clean.replace(/\\cos\\left\(([a-z0-9])\\right\)/g, '\\cos $1');
+        clean = clean.replace(/\\tan\\left\(([a-z0-9])\\right\)/g, '\\tan $1');
+
+        // 3. Quitar \left( y \right) genéricos pero con cuidado
+        // Para este nivel, es mejor dejar que MathJax maneje la elegancia.
+        return clean;
+    }
+
     function calcular() {
-        const inputRaw = document.getElementById('entrada').value.trim();
+        let inputRaw = document.getElementById('entrada').value.trim();
         const salida = document.getElementById('salida');
         const btnPasos = document.getElementById('btnPasos');
 
         if (!inputRaw) return;
 
-        salida.innerHTML = "Analizando expresión...";
+        // CORRECCIÓN CLAVE: Convertir 'ln' a 'log' para que Nerdamer lo entienda como función
+        let inputProcesado = inputRaw.replace(/ln/g, 'log');
+
+        salida.innerHTML = "Procesando...";
 
         setTimeout(() => {
             try {
-                // 1. Resolvemos la integral
-                let integral = nerdamer('integrate(' + inputRaw + ', x)');
-                let resultadoLatex = integral.toTeX();
-                let entradaLatex = nerdamer(inputRaw).toTeX();
+                // Calcular
+                let integral = nerdamer('integrate(' + inputProcesado + ', x)');
+                
+                // Formatear LaTeX
+                let resLatex = limpiarLatex(integral.toTeX());
+                let entLatex = limpiarLatex(nerdamer(inputProcesado).toTeX());
 
-                // 2. Renderizamos el resultado en el cuadro
-                salida.innerHTML = `$$ \\int {${entradaLatex}} \\, dx = ${resultadoLatex} + C $$`;
+                salida.innerHTML = `$$ \\int {${entLatex}} \\, dx = ${resLatex} + C $$`;
                 MathJax.typesetPromise([salida]);
 
-                // 3. Generamos el enlace dinámico para MathDF
-                // La estructura es https://mathdf.com/int/es/#expr=TU_EXPRESION
-                const urlBase = "https://mathdf.com/int/es/#expr=";
-                // Limpiamos la entrada para que la URL sea válida
-                const expresionLimpia = encodeURIComponent(inputRaw);
-                
-                btnPasos.href = urlBase + expresionLimpia;
+                // Enlace a MathDF (usamos la entrada original del usuario)
+                btnPasos.href = "https://mathdf.com/int/es/#expr=" + encodeURIComponent(inputRaw);
                 btnPasos.style.display = "flex";
 
             } catch (e) {
-                salida.innerHTML = "<span style='color:#ef4444;'>❌ Error: No se pudo procesar. Revisa la sintaxis.</span>";
+                salida.innerHTML = "<span style='color:red;'>Error: Revisa la expresión</span>";
                 btnPasos.style.display = "none";
             }
-        }, 150);
+        }, 100);
     }
 </script>
 
