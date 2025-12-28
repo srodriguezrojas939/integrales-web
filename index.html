@@ -167,7 +167,7 @@
             overflow-x: auto;
         }
 
-        /* --- ESTILOS DEL MODAL (CÓMO FUNCIONA) --- */
+        /* --- ESTILOS DEL MODAL MEJORADOS --- */
         .modal {
             display: none;
             position: fixed;
@@ -182,11 +182,13 @@
 
         .modal-content {
             background-color: #F2F2F2;
-            margin: 10% auto;
-            padding: 40px;
+            margin: 5% auto;
+            padding: 35px;
             border-radius: 35px;
-            width: 80%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 80vh;
+            overflow-y: auto;
             font-family: 'Open Sans', sans-serif;
             position: relative;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
@@ -196,11 +198,32 @@
         .modal-content h2 {
             font-family: 'Playfair Display', serif;
             margin-top: 0;
+            font-size: 28px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
         }
 
-        .modal-content ul {
-            padding-left: 20px;
-            line-height: 1.6;
+        .modal-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .modal-content p, .modal-content li {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .ejemplo-box {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            display: block;
+            font-family: monospace;
+            margin: 5px 0 15px 0;
+            border-left: 3px solid black;
         }
 
         .close-modal {
@@ -224,7 +247,7 @@
         </div>
 
         <label>Función a integrar</label>
-        <input id="funcion" placeholder="Ej: x^2 + sin(x)" type="text">
+        <input id="funcion" placeholder="Ej: x*sin(x), log(x), x^2" type="text">
 
         <div class="row">
             <div>
@@ -278,15 +301,31 @@
 <div id="modalInstrucciones" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="cerrarModal()">&times;</span>
-        <h2>Instrucciones</h2>
-        <p>Para obtener el mejor resultado, sigue estos consejos:</p>
-        <ul>
-            <li>Usa <b>^</b> para potencias (ej: <b>x^2</b>).</li>
-            <li>Escribe los paréntesis en funciones: <b>sin(x)</b>, <b>log(x)</b>.</li>
-            <li>Para la constante π, escribe <b>pi</b>.</li>
-            <li>En integrales definidas, puedes usar números o palabras como <b>pi</b> o <b>e</b> en los límites.</li>
-            <li>El botón "Paso a paso" te mostrará el procedimiento detallado en una pestaña nueva.</li>
-        </ul>
+        <h2>Guía de Uso</h2>
+        
+        <section>
+            <h3>1. Identidades y Logaritmos</h3>
+            <p>Es muy importante usar paréntesis siempre que utilices funciones trigonométricas o logarítmicas.</p>
+            <span class="ejemplo-box">Correcto: sin(x), cos(x^2), log(x+1)</span>
+        </section>
+
+        <section>
+            <h3>2. Multiplicaciones explícitas</h3>
+            <p>Si vas a multiplicar una variable por una función u otra expresión, utiliza el asterisco <b>*</b> para evitar errores de interpretación.</p>
+            <span class="ejemplo-box">Ejemplo: x*tan(x) en lugar de xtanx</span>
+        </section>
+
+        <section>
+            <h3>3. Sobre el Logaritmo Natural (ln)</h3>
+            <p>La calculadora interpreta <b>ln</b> como <b>log</b>. Puedes escribir <i>ln(x)</i>, pero el resultado siempre se mostrará como <i>log(x)</i>. Se recomienda usar directamente:</p>
+            <span class="ejemplo-box">log(x)</span>
+        </section>
+
+        <section>
+            <h3>4. Redirección a MathDF</h3>
+            <p>Esta herramienta no tiene ningún vínculo oficial con <b>MathDF</b>. Te redirigimos allí para el "paso a paso" debido a su excelente calidad y porque, por el momento, no dispongo del tiempo necesario para programar un motor de resolución detallada desde cero.</p>
+        </section>
+
         <div style="text-align: center; margin-top: 20px;">
             <button onclick="cerrarModal()" class="boton-estilo boton-principal" style="width: auto; padding: 10px 30px;">Entendido</button>
         </div>
@@ -294,14 +333,10 @@
 </div>
 
 <script>
-// --- LÓGICA DEL MODAL ---
+// --- LÓGICA MODAL ---
 function abrirModal() { document.getElementById('modalInstrucciones').style.display = "block"; }
 function cerrarModal() { document.getElementById('modalInstrucciones').style.display = "none"; }
-
-window.onclick = function(event) {
-    let modal = document.getElementById('modalInstrucciones');
-    if (event.target == modal) { cerrarModal(); }
-}
+window.onclick = function(e) { if (e.target == document.getElementById('modalInstrucciones')) cerrarModal(); }
 
 // --- LÓGICA OPERATIVA (SIN CAMBIOS) ---
 function normalizar(expr) {
@@ -319,34 +354,25 @@ function calcular() {
     const v = document.getElementById('variable').value;
     const out = document.getElementById('resultado');
 
-    if (!funcionInput) {
-        out.innerHTML = "Ingresa una función";
-        return;
-    }
+    if (!funcionInput) { out.innerHTML = "Ingresa una función"; return; }
 
     try {
         const f = normalizar(funcionInput);
         let latex = "";
-
         if (tipo === 'indef') {
             const F = nerdamer.integrate(f, v);
             latex = `\\int ${nerdamer(f).toTeX()}\\, d${v} = ${F.toTeX()} + C`;
         } else {
             const valA = document.getElementById('a').value.trim();
             const valB = document.getElementById('b').value.trim();
-            if (valA === "" || valB === "") {
-                out.innerHTML = "<span style='color:red'>Faltan límites</span>";
-                return;
-            }
+            if (valA === "" || valB === "") { out.innerHTML = "Faltan límites"; return; }
             const a = normalizar(valA);
             const b = normalizar(valB);
             const resultadoDef = nerdamer(`defint(${f}, ${a}, ${b}, ${v})`);
             latex = `\\int_{${nerdamer(a).toTeX()}}^{${nerdamer(b).toTeX()}} ${nerdamer(f).toTeX()}\\, d${v} = ${resultadoDef.toTeX()}`;
         }
-
         out.innerHTML = `$$${latex}$$`;
         MathJax.typesetPromise([out]);
-
     } catch (error) {
         out.innerHTML = "<span style='color:red'>Error de sintaxis</span>";
     }
@@ -355,7 +381,7 @@ function calcular() {
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
-    if (!f) { alert("Por favor, escribe una función primero."); return; }
+    if (!f) { alert("Escribe una función primero."); return; }
     window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
 }
 
