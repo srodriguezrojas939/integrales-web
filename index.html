@@ -57,7 +57,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
 
-        /* TÍTULOS CON PLAYFAIR DISPLAY */
+        /* TÍTULOS */
         .header-section {
             text-align: center;
             margin-bottom: 28px;
@@ -76,11 +76,11 @@
         }
 
         .header-section p {
-            font-size: 20px; /* Un poco más pequeño que el h1 */
-            font-weight: 400;
+            font-size: 20px;
+            font-weight: 600; /* NEGRITA APLICADA */
             margin-top: 5px;
-            font-family: 'Playfair Display', serif; /* Actualizado a Playfair */
-            color: #444;
+            font-family: 'Playfair Display', serif;
+            color: #333;
         }
 
         @keyframes titleFadeIn {
@@ -136,7 +136,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             background: white;
             border: 1px solid #ccc;
             border-radius: 35px;
@@ -160,19 +160,19 @@
         }
 
         .boton-estilo img {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
         }
 
         .boton-principal {
             background: black;
             color: white;
             border: none;
+            font-weight: 600;
         }
 
         .boton-principal:hover {
             background: #333;
-            color: white;
         }
 
         /* ÁREA DE RESULTADO */
@@ -238,7 +238,7 @@
             </button>
 
             <button onclick="irAPasoAPaso()" class="boton-estilo">
-                <img src="https://cdn-icons-png.flaticon.com/512/10322/10322382.png" alt="pasos">
+                <img src="https://cdn-icons-png.flaticon.com/512/2374/2374367.png" alt="pasos">
                 Ver paso a paso (MathDF)
             </button>
         </div>
@@ -248,7 +248,6 @@
 </div>
 
 <script>
-// --- LÓGICA OPERATIVA ---
 function normalizar(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().replace(/\s+/g, '');
@@ -297,7 +296,6 @@ function calcular() {
     }
 }
 
-// --- REDIRECCIÓN A MATHDF ---
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
@@ -312,7 +310,6 @@ function irAPasoAPaso() {
     window.open(url, '_blank');
 }
 
-// Mostrar/Ocultar límites
 document.getElementById('tipo').addEventListener('change', e => {
     document.getElementById('limites').style.display = (e.target.value === 'def') ? 'grid' : 'none';
 });
