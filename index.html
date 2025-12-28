@@ -9,99 +9,104 @@
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
     
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
-            svg: { fontCache: 'global' }
-        };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
         :root { --primary: #2563eb; --secondary: #f59e0b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; }
-        .card { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 700px; border: 1px solid #e2e8f0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 650px; border: 1px solid #e2e8f0; }
         h2 { color: var(--primary); text-align: center; margin-bottom: 1.5rem; font-weight: 800; }
-        input { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 18px; box-sizing: border-box; transition: 0.3s; text-align: center; outline: none; }
+        input { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 18px; box-sizing: border-box; text-align: center; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         button, .btn-link { padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; font-weight: 700; transition: 0.2s; text-decoration: none; display: flex; align-items: center; justify-content: center; }
         .btn-calc { background: var(--primary); color: white; }
         .btn-steps { background: var(--secondary); color: white; display: none; }
-        #resultado-box { margin-top: 25px; padding: 25px; border-radius: 18px; background: #ffffff; border: 1px solid #e2e8f0; min-height: 120px; overflow-x: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.4rem; }
-        .footer-info { font-size: 0.85rem; color: #64748b; margin-top: 20px; text-align: center; line-height: 1.4; }
+        #resultado-box { margin-top: 25px; padding: 20px; border-radius: 18px; background: #fff; border: 1px solid #e2e8f0; min-height: 120px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; overflow-x: auto; }
+        .error { color: #ef4444; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>Calculadora de Integrales</h2>
-    <input type="text" id="entrada" placeholder="Ej: sen(8x+1) o log(x)" onkeypress="if(event.key==='Enter') calcular()">
+    <input type="text" id="entrada" placeholder="Ej: sen(8x+1) o ln(x)" onkeypress="if(event.key==='Enter') calcular()">
     
     <div class="btn-group">
-        <button class="btn-calc" onclick="calcular()">Calcular</button>
-        <a id="btnPasos" class="btn-link btn-steps" target="_blank">Paso a paso ↗</a>
+        <button class="btn-calc" onclick="calcular()">Calcular Integral</button>
+        <a id="btnPasos" class="btn-link btn-steps" target="_blank">Ver paso a paso ↗</a>
     </div>
     
-    <div id="resultado-box"><div id="salida">Resultado...</div></div>
-
-    <div class="footer-info">Escribe <b>sen</b> para seno y <b>log</b> para logaritmo natural.</div>
+    <div id="resultado-box">
+        <div id="salida">Esperando función...</div>
+    </div>
 </div>
 
 <script>
-    // 1. TRADUCTOR DE ENTRADA (Español/Humano -> Nerdamer)
-    function procesarEntrada(texto) {
-        return texto.toLowerCase()
-            .replace(/sen/g, 'sin')      // Traduce sen a sin
-            .replace(/ln/g, 'log')       // Nerdamer usa log como natural
-            .replace(/tg/g, 'tan');      // Traduce tg a tan
-    }
-
-    // 2. EMBELLECEDOR DE LATEX (Estilo MathDF)
+    // 1. LIMPIEZA DE LATEX (Estilo MathDF)
     function limpiarLatex(tex) {
         if (!tex) return "";
-        return tex
-            .replace(/\\log/g, '\\ln')              // Siempre mostrar ln
-            .replace(/\\cdot/g, '')                 // Quitar puntos de multiplicación
-            // Quitar paréntesis en argumentos simples: sin(8x), ln(x), etc.
-            // Busca funciones seguidas de paréntesis con contenido simple (letras, números, espacios)
-            .replace(/\\(sin|cos|tan|ln|sqrt)\\left\(([a-z0-9\s]+)\\right\)/g, '\\$1 $2')
-            // Caso especial para raíces: \sqrt x en lugar de \sqrt(x)
-            .replace(/\\sqrt\{([a-z0-9\s]+)\}/g, '\\sqrt $1');
+        let limpio = tex
+            .replace(/\\mathrm{log}/g, '\\ln') // Cambia log por ln
+            .replace(/\\log/g, '\\ln')
+            .replace(/\\cdot/g, ' ')           // Quita los puntos de multiplicar
+            .replace(/\\left\(/g, '(')         // Simplifica paréntesis
+            .replace(/\\right\)/g, ')');
+
+        // REGLA DE ORO: Quitar paréntesis solo en casos simples como ln(x) o sen(8x)
+        // Pero dejarlos en expresiones complejas como sen(8x+1)
+        limpio = limpio.replace(/\\(ln|sin|cos|tan)\(((\d+)?[a-z])\)/g, '\\$1 $2');
+        
+        // Traducir sin a sen para el usuario hispano
+        limpio = limpio.replace(/\\sin/g, '\\text{sen}');
+        
+        return limpio;
     }
 
     function calcular() {
-        const inputUser = document.getElementById('entrada').value.trim();
+        const inputRaw = document.getElementById('entrada').value.trim();
         const salida = document.getElementById('salida');
         const btnPasos = document.getElementById('btnPasos');
 
-        if (!inputUser) return;
-        salida.innerHTML = "Procesando...";
+        if (!inputRaw) return;
 
-        const inputMotor = procesarEntrada(inputUser);
+        // TRADUCCIÓN: Traducimos 'sen' a 'sin' y 'ln' a 'log' para que Nerdamer entienda
+        let inputProcesado = inputRaw.toLowerCase()
+            .replace(/sen/g, 'sin')
+            .replace(/ln/g, 'log')
+            .replace(/tg/g, 'tan');
+
+        salida.innerHTML = "Calculando...";
 
         setTimeout(() => {
             try {
-                // Cálculo
-                let integral = nerdamer('integrate(' + inputMotor + ', x)');
+                // Cálculo de la integral
+                let integral = nerdamer('integrate(' + inputProcesado + ', x)');
                 
-                // Formateo de visualización
+                // Formateo de LaTeX
                 let resTex = limpiarLatex(integral.toTeX());
-                let entTex = limpiarLatex(nerdamer(inputMotor).toTeX());
+                let entTex = limpiarLatex(nerdamer(inputProcesado).toTeX());
 
-                salida.innerHTML = `\\[ \\int {${entTex}} \\, dx = ${resTex} + C \\]`;
-                MathJax.typesetPromise([salida]);
+                // INSERTAR: Usamos el delimitador estándar $$ para forzar el renderizado
+                salida.innerHTML = "$$ \\int {" + entTex + "} \\, dx = " + resTex + " + C $$";
+                
+                // RE-RENDERIZAR: Esto es lo que evita que se vea como texto plano
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise([salida]);
+                }
 
-                // Enlace MathDF (usamos la entrada original del usuario)
-                btnPasos.href = "https://mathdf.com/int/es/#expr=" + encodeURIComponent(inputUser);
+                // Configurar botón de pasos
+                btnPasos.href = "https://mathdf.com/int/es/#expr=" + encodeURIComponent(inputRaw);
                 btnPasos.style.display = "flex";
 
             } catch (e) {
-                salida.innerHTML = "<span style='color:red;'>Error de sintaxis</span>";
+                salida.innerHTML = "<span class='error'>❌ No pude entender la expresión. Asegúrate de usar * para multiplicar (ej: 5*x).</span>";
                 btnPasos.style.display = "none";
             }
         }, 100);
     }
 </script>
+
 </body>
 </html>
