@@ -4,100 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Integrales Pro</title>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
-    
+
     <script>
         window.MathJax = {
-            tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
-            svg: { fontCache: 'global' }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 
     <style>
-        :root { --primary: #2563eb; --secondary: #f59e0b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; }
-        .card { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 650px; border: 1px solid #e2e8f0; }
-        h2 { color: var(--primary); text-align: center; margin-bottom: 1.5rem; font-weight: 800; }
-        input { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 18px; box-sizing: border-box; transition: 0.3s; text-align: center; }
-        input:focus { border-color: var(--primary); outline: none; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        button, .btn-link { padding: 16px; border: none; border-radius: 14px; font-size: 16px; cursor: pointer; font-weight: 700; transition: 0.2s; text-decoration: none; display: flex; align-items: center; justify-content: center; }
-        .btn-calc { background: var(--primary); color: white; }
-        .btn-steps { background: var(--secondary); color: white; display: none; }
-        #resultado-box { margin-top: 25px; padding: 25px; border-radius: 18px; background: #ffffff; border: 2px solid #f1f5f9; min-height: 120px; overflow-x: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.3rem; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h2 { color: #1e293b; text-align: center; margin-bottom: 1.5rem; }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 20px;
+        }
+        button:hover { background: #1d4ed8; }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        #resultado {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            overflow-x: auto;
+        }
     </style>
 </head>
-<body>
 
+<body>
 <div class="card">
     <h2>Calculadora de Integrales</h2>
-    <input type="text" id="entrada" placeholder="Ej: ln(x+1) o sin(x)" onkeypress="if(event.key==='Enter') calcular()">
-    
-    <div class="btn-group">
-        <button class="btn-calc" onclick="calcular()">Calcular</button>
-        <a id="btnPasos" class="btn-link btn-steps" target="_blank">Paso a paso ↗</a>
+
+    <input id="funcion" placeholder="Ej: x^2, sin(x), cos(x)*tan(x)">
+
+    <div class="row">
+        <select id="tipo">
+            <option value="indef">Integral indefinida</option>
+            <option value="def">Integral definida</option>
+        </select>
+        <select id="variable">
+            <option value="x">dx</option>
+            <option value="t">dt</option>
+            <option value="u">du</option>
+        </select>
     </div>
-    
-    <div id="resultado-box">
-        <div id="salida">Esperando función...</div>
+
+    <div class="row" id="limites" style="display:none;">
+        <input id="a" placeholder="Límite inferior (a)">
+        <input id="b" placeholder="Límite superior (b)">
     </div>
+
+    <button onclick="calcular()">Calcular Resultado</button>
+
+    <div id="resultado">Esperando función...</div>
 </div>
 
 <script>
-    function limpiarLatex(tex) {
-        // 1. Cambiar log por ln
-        let clean = tex.replace(/\\log/g, '\\ln');
-        
-        // 2. Quitar paréntesis SOLO si dentro hay una sola letra (ej: ln(x) -> ln x)
-        // Pero mantenerlos si hay algo más complejo (ej: ln(x+1))
-        clean = clean.replace(/\\ln\\left\(([a-z0-9])\\right\)/g, '\\ln $1');
-        clean = clean.replace(/\\sin\\left\(([a-z0-9])\\right\)/g, '\\sin $1');
-        clean = clean.replace(/\\cos\\left\(([a-z0-9])\\right\)/g, '\\cos $1');
-        clean = clean.replace(/\\tan\\left\(([a-z0-9])\\right\)/g, '\\tan $1');
+// Normaliza la entrada para que Nerdamer la entienda mejor
+function normalizar(expr) {
+    if (!expr) return "";
+    let e = expr.toLowerCase().replace(/\s+/g, '');
+    e = e.replace(/π/g, 'pi');
+    e = e.replace(/ln/g, 'log');
+    // Intenta poner paréntesis a funciones si el usuario lo olvida
+    e = e.replace(/(sin|cos|tan|sec|csc|cot|log)(\d*[a-z])/g, '$1($2)');
+    return e;
+}
 
-        // 3. Quitar \left( y \right) genéricos pero con cuidado
-        // Para este nivel, es mejor dejar que MathJax maneje la elegancia.
-        return clean;
+function calcular() {
+    const funcionInput = document.getElementById('funcion').value.trim();
+    const tipo = document.getElementById('tipo').value;
+    const v = document.getElementById('variable').value;
+    const out = document.getElementById('resultado');
+
+    if (!funcionInput) {
+        out.innerHTML = "Por favor, ingresa una función.";
+        return;
     }
 
-    function calcular() {
-        let inputRaw = document.getElementById('entrada').value.trim();
-        const salida = document.getElementById('salida');
-        const btnPasos = document.getElementById('btnPasos');
+    try {
+        const f = normalizar(funcionInput);
+        let latex = "";
 
-        if (!inputRaw) return;
+        if (tipo === 'indef') {
+            // Integral Indefinida
+            const F = nerdamer.integrate(f, v);
+            latex = `\\int ${nerdamer(f).toTeX()}\\, d${v} = ${F.toTeX()} + C`;
+        } else {
+            // Integral Definida
+            const valA = document.getElementById('a').value.trim();
+            const valB = document.getElementById('b').value.trim();
 
-        // CORRECCIÓN CLAVE: Convertir 'ln' a 'log' para que Nerdamer lo entienda como función
-        let inputProcesado = inputRaw.replace(/ln/g, 'log');
-
-        salida.innerHTML = "Procesando...";
-
-        setTimeout(() => {
-            try {
-                // Calcular
-                let integral = nerdamer('integrate(' + inputProcesado + ', x)');
-                
-                // Formatear LaTeX
-                let resLatex = limpiarLatex(integral.toTeX());
-                let entLatex = limpiarLatex(nerdamer(inputProcesado).toTeX());
-
-                salida.innerHTML = `$$ \\int {${entLatex}} \\, dx = ${resLatex} + C $$`;
-                MathJax.typesetPromise([salida]);
-
-                // Enlace a MathDF (usamos la entrada original del usuario)
-                btnPasos.href = "https://mathdf.com/int/es/#expr=" + encodeURIComponent(inputRaw);
-                btnPasos.style.display = "flex";
-
-            } catch (e) {
-                salida.innerHTML = "<span style='color:red;'>Error: Revisa la expresión</span>";
-                btnPasos.style.display = "none";
+            if (valA === "" || valB === "") {
+                out.innerHTML = "<span style='color:red'>Debes indicar ambos límites.</span>";
+                return;
             }
-        }, 100);
+
+            const a = normalizar(valA);
+            const b = normalizar(valB);
+
+            // Uso de la función nativa defint de Nerdamer
+            const resultadoDef = nerdamer(`defint(${f}, ${a}, ${b}, ${v})`);
+            
+            // Construcción del LaTeX para el resultado
+            const aTeX = nerdamer(a).toTeX();
+            const bTeX = nerdamer(b).toTeX();
+            latex = `\\int_{${aTeX}}^{${bTeX}} ${nerdamer(f).toTeX()}\\, d${v} = ${resultadoDef.toTeX()}`;
+        }
+
+        out.innerHTML = `$$${latex}$$`;
+        MathJax.typesetPromise([out]);
+
+    } catch (error) {
+        console.error(error);
+        out.innerHTML = "<span style='color:red'>Error: Revisa la sintaxis (ej. usa x^2 en vez de x2)</span>";
     }
+}
+
+// Mostrar/Ocultar campos de límites
+document.getElementById('tipo').addEventListener('change', e => {
+    document.getElementById('limites').style.display = (e.target.value === 'def') ? 'grid' : 'none';
+});
 </script>
 
 </body>
