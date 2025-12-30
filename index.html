@@ -65,7 +65,6 @@
             font-weight: 600;
         }
 
-        /* Panel de previsualización y resultado con scroll para móvil */
         #preview-container, #resultado {
             background: white; 
             margin-bottom: 20px; 
@@ -96,7 +95,7 @@
             border-radius: 25px;
             border: 1px solid #ccc; 
             box-sizing: border-box; 
-            font-size: 16px; /* Evita zoom en iOS */
+            font-size: 16px; 
             outline: none;
             font-family: 'Open Sans', sans-serif;
             background-color: white;
@@ -201,7 +200,7 @@
             </button>
         </div>
 
-        <div id="resultado">Esperando...</div>
+        <div id="resultado">Esperando función...</div>
     </div>
 </div>
 
@@ -256,9 +255,20 @@ function calcularIntegral() {
 
     try {
         const f = normalizar(input);
+        
         if (tipo === 'indef') {
-            const F = nerdamer.integrate(f, v);
-            out.innerHTML = `$$ ${F.toTeX()} + C $$`;
+            // Intentamos simplificar antes e integrar
+            let F = nerdamer.integrate(f, v);
+            let resText = F.text();
+
+            // Si la respuesta contiene "integrate", Nerdamer no pudo resolverla
+            if (resText.includes('integrate')) {
+                out.innerHTML = "<div style='font-size:14px; color:#555;'>Esta integral requiere métodos avanzados. Usa el botón <b>'Ver paso a paso'</b> para la solución completa.</div>";
+            } else {
+                // Intentamos expandir para limpiar partes no resueltas de integración por partes
+                let finalRes = nerdamer(resText).expand();
+                out.innerHTML = `$$ ${finalRes.toTeX()} + C $$`;
+            }
         } else {
             const valA = document.getElementById('limA').value.trim();
             const valB = document.getElementById('limB').value.trim();
@@ -268,7 +278,7 @@ function calcularIntegral() {
         }
         MathJax.typesetPromise([out]);
     } catch (e) { 
-        out.innerHTML = "<small style='color:red'>Error de sintaxis o integral compleja</small>"; 
+        out.innerHTML = "<small style='color:red'>Error: Revisa los paréntesis o la sintaxis</small>"; 
     }
 }
 
@@ -278,7 +288,6 @@ function irAPasoAPaso() {
     if (f) window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
 }
 
-// Inicialización
 actualizarVistaPrevia();
 </script>
 
