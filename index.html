@@ -79,9 +79,9 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Espaciado solicitado del visor respecto al botón */
+        /* Espaciado solicitado del visor de respuesta */
         #resultado {
-            margin-top: 30px; 
+            margin-top: 45px; 
         }
 
         label { 
@@ -262,23 +262,20 @@ function calcularIntegral() {
         const f = normalizar(input);
         
         if (tipo === 'indef') {
-            // Utilizamos el método directo de integración de la librería
-            let F = nerdamer.integrate(f, v);
+            // Se usa el constructor principal para asegurar compatibilidad total
+            let sol = nerdamer('integrate(' + f + ',' + v + ')');
             
-            // Si el resultado devuelto es la misma función integrate, es que no pudo resolverla
-            if (F.toString().includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Esta integral es compleja. Prueba el botón <b>'Ver paso a paso'</b>.</div>";
+            if (sol.toString().includes('integrate')) {
+                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Función compleja. Prueba el botón <b>'Ver paso a paso'</b>.</div>";
             } else {
-                // Simplificamos el resultado final para que sea estético
-                out.innerHTML = `$$ ${F.simplify().toTeX()} + C $$`;
+                out.innerHTML = `$$ ${sol.toTeX()} + C $$`;
             }
         } else {
             const valA = normalizar(document.getElementById('limA').value.trim());
             const valB = normalizar(document.getElementById('limB').value.trim());
             if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
             
-            // Cálculo de integral definida usando el método nativo
-            const resDef = nerdamer.defint(f, valA, valB, v);
+            const resDef = nerdamer('defint(' + f + ',' + valA + ',' + valB + ',' + v + ')');
             out.innerHTML = `$$ = ${resDef.toTeX()} $$`;
         }
         MathJax.typesetPromise([out]);
