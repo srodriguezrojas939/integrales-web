@@ -11,12 +11,7 @@
         window.MathJax = {
             tex: { 
                 inlineMath: [['$', '$'], ['\\(', '\\)']], 
-                displayMath: [['$$', '$$']],
-                // Macro obligatoria para que log se vea siempre como ln
-                macros: {
-                    log: '\\ln',
-                    ln: '\\ln'
-                }
+                displayMath: [['$$', '$$']]
             },
             options: { enableMenu: false }
         };
@@ -38,7 +33,7 @@
 
         #preview-container { background: white; margin-bottom: 20px; padding: 20px; border-radius: 20px; min-height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; overflow-x: auto; }
 
-        /* DISTANCIA DE 34PX SOLICITADA */
+        /* DISTANCIA EXACTA DE 34PX SOLICITADA */
         #resultado {
             background: white; 
             margin-top: 34px; 
@@ -80,7 +75,7 @@
         </div>
 
         <label>función a integrar</label>
-        <input id="funcion" placeholder="Ej: ln(x) + 2x" type="text" oninput="actualizarVistaPrevia()">
+        <input id="funcion" placeholder="Ej: x*ln(x)" type="text" oninput="actualizarVistaPrevia()">
 
         <div class="row">
             <div>
@@ -102,7 +97,7 @@
 
         <div id="limites-container" class="row" style="display: none;">
             <div><label>límite inferior</label><input id="limA" placeholder="0" type="text" oninput="actualizarVistaPrevia()"></div>
-            <div><label>límite superior</label><input id="limB" placeholder="pi" type="text" oninput="actualizarVistaPrevia()"></div>
+            <div><label>límite superior</label><input id="limB" placeholder="1" type="text" oninput="actualizarVistaPrevia()"></div>
         </div>
 
         <div class="botones-container">
@@ -118,102 +113,14 @@
 </div>
 
 <script>
-// Normalización de alta robustez
-function robustez(expr) {
-    if (!expr) return "";
-    let e = expr.toLowerCase().trim();
+// Función de limpieza ultra-robusta
+function procesar(texto) {
+    if (!texto) return "";
+    let e = texto.toLowerCase().trim();
     
-    // Mapeo básico
+    // Convertimos ln a log (que es lo que entiende el motor)
     e = e.replace(/ln/g, 'log');
-    e = e.replace(/π/g, 'pi');
     
-    // Multiplicación implícita inteligente (evita romper nombres de funciones)
-    // 1. Números seguidos de letras: 2x -> 2*x
-    e = e.replace(/(\d)([a-z])/g, '$1*$2');
-    // 2. Paréntesis cerrados seguidos de apertura: (x)(y) -> (x)*(y)
-    e = e.replace(/\)\(/g, ')*(');
-    // 3. Letras seguidas de log/sin/etc: xlog(x) -> x*log(x)
-    e = e.replace(/([a-z])(log|sin|cos|tan|sqrt)/g, '$1*$2');
-    
-    return e;
-}
-
-function limpiarTex(tex) {
-    // Forzamos visualmente el LN en lugar de LOG
-    return tex.replace(/\\log/g, '\\ln').replace(/log/g, '\\ln');
-}
-
-function toggleLimites() {
-    document.getElementById('limites-container').style.display = (document.getElementById('tipo').value === 'def') ? 'grid' : 'none';
-}
-
-function actualizarVistaPrevia() {
-    const input = document.getElementById('funcion').value.trim();
-    const v = document.getElementById('variable').value;
-    const tipo = document.getElementById('tipo').value;
-    const preview = document.getElementById('latex-preview');
-
-    if (!input) {
-        preview.innerHTML = tipo === 'indef' ? `$$ \\int (\\dots) \\, d${v} $$` : `$$ \\int_{a}^{b} (\\dots) \\, d${v} $$`;
-        MathJax.typesetPromise([preview]);
-        return;
-    }
-
-    try {
-        const p = robustez(input);
-        const texf = limpiarTex(Algebrite.run(`printlatex(${p})`));
-        preview.innerHTML = (tipo === 'indef') ? `$$ \\int ${texf} \\, d${v} $$` : `$$ \\int_{a}^{b} ${texf} \\, d${v} $$`;
-    } catch (e) { preview.innerHTML = `$$ \\dots $$`; }
-    MathJax.typesetPromise([preview]);
-}
-
-function calcularIntegral() {
-    const input = document.getElementById('funcion').value.trim();
-    const v = document.getElementById('variable').value;
-    const tipo = document.getElementById('tipo').value;
-    const out = document.getElementById('resultado');
-    
-    if (!input) return;
-
-    try {
-        const f = robustez(input);
-        
-        if (tipo === 'indef') {
-            const comando = `integral(${f}, ${v})`;
-            const res = Algebrite.run(comando);
-            
-            // Verificamos si realmente se integró (si no contiene la palabra integral)
-            if (res.includes('integral')) {
-                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Integral compleja. Usa <b>'Ver paso a paso'</b> para MathDF.</div>";
-            } else {
-                const texRes = limpiarTex(Algebrite.run(`printlatex(${comando})`));
-                out.innerHTML = `$$ ${texRes} + C $$`;
-            }
-        } else {
-            const a = robustez(document.getElementById('limA').value);
-            const b = robustez(document.getElementById('limB').value);
-            const defRes = Algebrite.run(`defint(${f}, ${v}, ${a}, ${b})`);
-            const texDef = limpiarTex(Algebrite.run(`printlatex(defint(${f}, ${v}, ${a}, ${b}))`));
-            out.innerHTML = `$$ = ${texDef} $$`;
-        }
-    } catch (e) { 
-        out.innerHTML = "<small style='color:#d93025'>Revisa los paréntesis o la expresión.</small>"; 
-    }
-    MathJax.typesetPromise([out]);
-}
-
-// REDIRECCIÓN A MATHDF RESTAURADA
-function irAPasoAPaso() {
-    const f = document.getElementById('funcion').value.trim();
-    const v = document.getElementById('variable').value;
-    if (f) {
-        // Formato de URL de MathDF
-        window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&var=${v}`, '_blank');
-    }
-}
-
-actualizarVistaPrevia();
-</script>
-
-</body>
-</html>
+    // Arreglo de multiplicación implícita: 2x -> 2*x, xln -> x*log
+    e = e.replace(/(\d)([a-z\(])/g, '$1*$2');
+    e = e.replace(/([a-z\)])(\d)/g,
