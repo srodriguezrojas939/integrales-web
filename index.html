@@ -8,10 +8,16 @@
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Extra.js"></script>
     
     <script>
         window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+            tex: { 
+                inlineMath: [['$', '$'], ['\\(', '\\)']], 
+                displayMath: [['$$', '$$']],
+                // Forzamos a MathJax a que siempre que vea log en LaTeX lo trate visualmente como ln si es necesario
+                macros: { log: '\\ln' } 
+            },
             options: { enableMenu: false }
         };
     </script>
@@ -76,21 +82,20 @@
             justify-content: center; 
             border: 1px solid #eee;
             overflow-x: auto; 
-            -webkit-overflow-scrolling: touch;
         }
 
         #resultado {
             background: white; 
-            margin-top: 35px; /* Ajuste: Más espacio abajo del botón blanco */
-            padding: 20px;
+            margin-top: 40px; /* Caja de resultado más abajo, como pediste */
+            padding: 25px;
             border-radius: 20px; 
-            min-height: 70px; 
+            min-height: 80px; 
             display: flex;
             align-items: center; 
             justify-content: center; 
             border: 1px solid #eee;
             overflow-x: auto; 
-            -webkit-overflow-scrolling: touch;
+            font-size: 1.2rem;
         }
 
         label { 
@@ -172,7 +177,7 @@
         </div>
 
         <label>función a integrar</label>
-        <input id="funcion" placeholder="Ej: x^2 + cos(x)" type="text" oninput="actualizarVistaPrevia()">
+        <input id="funcion" placeholder="Ej: ln(x) + sqrt(x)" type="text" oninput="actualizarVistaPrevia()">
 
         <div class="row">
             <div>
@@ -221,12 +226,18 @@
 <script>
 function normalizar(expr) {
     if (!expr) return "";
-    let e = expr.toLowerCase().replace(/\s+/g, '');
+    let e = expr.toLowerCase().trim();
+    
     e = e.replace(/π/g, 'pi');
-    e = e.replace(/ln/g, 'log');
-    // Corrección para multiplicaciones implícitas como 2x -> 2*x
+    // Mapeamos ln a log para que Nerdamer lo entienda como Logaritmo Natural
+    e = e.replace(/ln\(/g, 'log('); 
+    
+    // Multiplicación implícita avanzada
     e = e.replace(/(\d)([a-z\(])/g, '$1*$2');
-    e = e.replace(/(\))([a-z\d])/g, '$1*$2');
+    e = e.replace(/([a-z\)])(\d)/g, '$1*$2');
+    e = e.replace(/(\))(\()/g, '$1*$2');
+    e = e.replace(/(\))([a-z])/g, '$1*$2');
+    
     return e;
 }
 
@@ -248,7 +259,11 @@ function actualizarVistaPrevia() {
     }
 
     try {
-        const fLatex = nerdamer(normalizar(input)).toTeX();
+        let n = normalizar(input);
+        let fLatex = nerdamer(n).toTeX();
+        // Aseguramos que visualmente aparezca \ln en la vista previa
+        fLatex = fLatex.replace(/\\log/g, '\\ln');
+        
         if (tipo === 'indef') {
             preview.innerHTML = `$$ \\int ${fLatex} \\, d${v} $$`;
         } else {
@@ -274,38 +289,34 @@ function calcularIntegral() {
         const f = normalizar(input);
         
         if (tipo === 'indef') {
-            // Se simplifica la expresión antes de integrar para evitar errores de sintaxis compleja
-            let F = nerdamer.integrate(f, v);
-            let resText = F.text();
-
-            if (resText.includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Esta integral es compleja para el cálculo rápido. <br>Usa <b>'Ver paso a paso'</b> para obtener la solución exacta.</div>";
+            let sol = nerdamer.integrate(f, v);
+            if (sol.text().includes('integrate')) {
+                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Integral compleja. Usa <b>'Ver paso a paso'</b> para obtener la solución.</div>";
             } else {
-                // Intentamos simplificar el resultado final para que sea matemáticamente elegante
-                let finalRes = nerdamer(resText).simplify();
-                out.innerHTML = `$$ ${finalRes.toTeX()} + C $$`;
+                let resTex = sol.simplify().toTeX();
+                // Forzamos la visualización de \ln en el resultado
+                resTex = resTex.replace(/\\log/g, '\\ln');
+                out.innerHTML = `$$ ${resTex} + C $$`;
             }
         } else {
-            const valA = document.getElementById('limA').value.trim();
-            const valB = document.getElementById('limB').value.trim();
+            const valA = normalizar(document.getElementById('limA').value);
+            const valB = normalizar(document.getElementById('limB').value);
             if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
-            
-            // Cálculo de integral definida con evaluación numérica y simbólica
-            const resDef = nerdamer(`defint(${f}, ${normalizar(valA)}, ${normalizar(valB)}, ${v})`);
-            out.innerHTML = `$$ = ${resDef.toTeX()} $$`;
+            let defSol = nerdamer(`defint(${f}, ${valA}, ${valB}, ${v})`);
+            let defTex = defSol.toTeX().replace(/\\log/g, '\\ln');
+            out.innerHTML = `$$ = ${defTex} $$`;
         }
-        MathJax.typesetPromise([out]);
     } catch (e) { 
-        out.innerHTML = "<small style='color:red'>Error: Revisa la sintaxis (ej: usa paréntesis en fracciones)</small>"; 
+        out.innerHTML = "<small style='color:#d93025'>Error de sintaxis. Revisa los paréntesis.</small>"; 
     }
+    MathJax.typesetPromise([out]);
 }
 
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
     if (f) {
-        // Enlace optimizado para MathDF para mayor precisión en el paso a paso
-        window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
+        window.open(`https://www.integral-calculator.com/?expr=${encodeURIComponent(f)}&variable=${v}`, '_blank');
     }
 }
 
