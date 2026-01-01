@@ -79,9 +79,9 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Espaciado solicitado para el visor de respuesta */
+        /* Espaciado solicitado del visor respecto al botón */
         #resultado {
-            margin-top: 25px;
+            margin-top: 30px; 
         }
 
         label { 
@@ -214,7 +214,6 @@ function normalizar(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().replace(/\s+/g, '');
     e = e.replace(/π/g, 'pi');
-    // Aseguramos que 'log' sea tratado como logaritmo natural
     e = e.replace(/ln/g, 'log');
     return e;
 }
@@ -263,22 +262,23 @@ function calcularIntegral() {
         const f = normalizar(input);
         
         if (tipo === 'indef') {
-            // Se usa el motor de integración simbólica de forma directa y simplificada
-            let F = nerdamer('integrate(' + f + ',' + v + ')').simplify();
-            let resText = F.text();
-
-            if (resText.includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Nerdamer no puede resolver esta integral simbólicamente. <br>Usa <b>'Ver paso a paso'</b> para la solución detallada.</div>";
+            // Utilizamos el método directo de integración de la librería
+            let F = nerdamer.integrate(f, v);
+            
+            // Si el resultado devuelto es la misma función integrate, es que no pudo resolverla
+            if (F.toString().includes('integrate')) {
+                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Esta integral es compleja. Prueba el botón <b>'Ver paso a paso'</b>.</div>";
             } else {
-                out.innerHTML = `$$ ${F.toTeX()} + C $$`;
+                // Simplificamos el resultado final para que sea estético
+                out.innerHTML = `$$ ${F.simplify().toTeX()} + C $$`;
             }
         } else {
-            const valA = document.getElementById('limA').value.trim();
-            const valB = document.getElementById('limB').value.trim();
+            const valA = normalizar(document.getElementById('limA').value.trim());
+            const valB = normalizar(document.getElementById('limB').value.trim());
             if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
             
-            // Cálculo de integral definida
-            const resDef = nerdamer(`defint(${f}, ${normalizar(valA)}, ${normalizar(valB)}, ${v})`);
+            // Cálculo de integral definida usando el método nativo
+            const resDef = nerdamer.defint(f, valA, valB, v);
             out.innerHTML = `$$ = ${resDef.toTeX()} $$`;
         }
         MathJax.typesetPromise([out]);
