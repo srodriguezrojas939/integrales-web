@@ -102,20 +102,55 @@
 
 <script>
 const categorias = {
-    principales: [
-        { s: '(', t: 'PARÉNTESIS' }, { s: ')', t: 'PARÉNTESIS' }, { s: '^', t: 'POTENCIA' }, 
-        { s: 'sqrt()', t: 'RAÍZ' }, { s: '/', t: 'DIVISIÓN' }, { s: '*', t: 'MULTIPLICACIÓN' },
-        { s: 'x', t: 'VARIABLE' }, { s: 'pi', t: 'PI' }
+      principales: [
+        { s: '(', t: 'ABRIR (' }, 
+        { s: ')', t: 'CERRAR )' },
+        { s: '+', t: 'SUMA' }, 
+        { s: '-', t: 'RESTA' },
+        { s: '*', t: 'MULT.' }, 
+        { s: '/', t: 'DIV.' },
+        { s: '( )/( )', t: 'FRACCIÓN' }, 
+        { s: '^', t: 'POTENCIA' },
+        { s: 'sqrt()', t: 'RAÍZ 2' }, 
+        { s: 'root( , )', t: 'RAÍZ N' },
+        { s: 'x', t: 'VAR X' }, 
+        { s: 'y', t: 'VAR Y' },
+        { s: 'pi', t: 'PI' }, 
+        { s: 'e', t: 'EULER' },
+        { s: 'inf', t: 'INFINITO' }, 
+        { s: '-inf', t: '- INFINITO' },
+        { s: 'abs()', t: 'ABS.' }, 
+        { s: '!', t: 'FACT.' }
     ],
     trig: [
-        { s: 'sin()', t: 'SENO' }, { s: 'cos()', t: 'COSENO' }, { s: 'tan()', t: 'TANGENTE' },
-        { s: 'sec()', t: 'SECANTE' }, { s: 'csc()', t: 'COSECANTE' }, { s: 'cot()', t: 'COTANGENTE' }
+       { s: 'sin()', t: 'SENO' }, 
+        { s: 'cos()', t: 'COSENO' }, 
+        { s: 'tan()', t: 'TAN' }, 
+        { s: 'sec()', t: 'SEC' }, 
+        { s: 'csc()', t: 'CSC' }, 
+        { s: 'cot()', t: 'COT' },
+        { s: 'sinh()', t: 'SENH' }, 
+        { s: 'cosh()', t: 'COSH' }, 
+        { s: 'tanh()', t: 'TANH' },
+        { s: 'coth()', t: 'COTH' }, 
+        { s: 'sech()', t: 'SECH' }, 
+        { s: 'csch()', t: 'CSCH' }
     ],
     inv: [
-        { s: 'asin()', t: 'ARCSIN' }, { s: 'acos()', t: 'ARCCOS' }, { s: 'atan()', t: 'ARCTAN' }
+    { s: 'asin()', t: 'ARCSIN' }, 
+        { s: 'acos()', t: 'ARCCOS' }, 
+        { s: 'atan()', t: 'ARCTAN' },
+          { s: 'asec()', t: 'ARCSEC' }, 
+        { s: 'acsc()', t: 'ARCCSC' },
+        { s: 'asinh()', t: 'ARSINH' }, 
+        { s: 'acosh()', t: 'ARCOSH' }, 
+        { s: 'atanh()', t: 'ARTANH' },
+        { s: 'acoth()', t: 'ARCOTH' },
+        { s: 'asech()', t: 'ARSECH' }, 
+        { s: 'acsch()', t: 'ARCSCH' }
     ],
     log: [
-        { s: 'log()', t: 'LOG' }, { s: 'ln()', t: 'LN' }, { s: 'exp()', t: 'EXP' }, { s: 'e^', t: 'E base' }
+        { s: 'log()', t: 'LOG' }, { s: 'ln()', t: 'LN' }, { s: 'exp()', t: 'EXP' }, { s: 'e^', t: 'E base' }, { s: 'Nota', t: 'En los resultados, log representa el logaritmo natural (ln).' }
     ]
 };
 
