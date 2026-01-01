@@ -14,7 +14,12 @@
         window.MathJax = {
             tex: { 
                 inlineMath: [['$', '$'], ['\\(', '\\)']], 
-                displayMath: [['$$', '$$']] 
+                displayMath: [['$$', '$$']],
+                // Esta macro obliga a MathJax a mostrar siempre ln aunque reciba log
+                macros: {
+                    log: '\\ln',
+                    ln: '\\ln'
+                }
             },
             options: { enableMenu: false }
         };
@@ -25,67 +30,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 
-        body { 
-            background: white; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 10px; 
-            box-sizing: border-box;
-        }
-
-        .fade-in { 
-            opacity: 0; 
-            transform: translateY(20px); 
-            animation: fadeUp 0.8s ease forwards; 
-            width: 100%; 
-            max-width: 600px; 
-        }
+        body { background: white; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+        .fade-in { opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease forwards; width: 100%; max-width: 600px; }
         @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-        .calculadora {
-            background: #F2F2F2; 
-            padding: 30px 20px; 
-            border-radius: 35px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-            box-sizing: border-box; 
-            width: 100%;
-        }
-
+        .calculadora { background: #F2F2F2; padding: 30px 20px; border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; width: 100%; }
         .header-section { text-align: center; margin-bottom: 20px; }
-        .header-section h1 { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 32px; 
-            margin: 0; 
-            font-weight: 600; 
-            text-transform: lowercase;
-        }
-        .header-section p { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 18px; 
-            margin: 5px 0; 
-            font-weight: 600;
-        }
+        .header-section h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin: 0; font-weight: 600; text-transform: lowercase; }
+        .header-section p { font-family: 'Playfair Display', serif; font-size: 18px; margin: 5px 0; font-weight: 600; }
 
-        #preview-container {
-            background: white; 
-            margin-bottom: 20px; 
-            padding: 20px;
-            border-radius: 20px; 
-            min-height: 70px; 
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid #eee;
-            overflow-x: auto; 
-        }
+        #preview-container { background: white; margin-bottom: 20px; padding: 20px; border-radius: 20px; min-height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; overflow-x: auto; }
 
-        /* Caja de resultado más abajo como pediste */
+        /* Espaciado de 34px exactos solicitado */
         #resultado {
             background: white; 
-            margin-top: 55px; 
+            margin-top: 34px; 
             padding: 25px;
             border-radius: 20px; 
             min-height: 80px; 
@@ -95,72 +54,18 @@
             border: 1px solid #eee;
             overflow-x: auto; 
             font-size: 1.2rem;
-            color: #333;
         }
 
-        label { 
-            display: block; 
-            font-family: 'Open Sans', sans-serif;
-            font-size: 14px; 
-            color: #444; 
-            margin: 0 0 6px 12px; 
-            font-weight: 600; 
-        }
-        
-        input, select {
-            width: 100%; 
-            padding: 14px 18px; 
-            margin-bottom: 15px; 
-            border-radius: 25px;
-            border: 1px solid #ccc; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            outline: none;
-            font-family: 'Open Sans', sans-serif;
-            background-color: white;
-        }
+        label { display: block; font-family: 'Open Sans', sans-serif; font-size: 14px; color: #444; margin: 0 0 6px 12px; font-weight: 600; }
+        input, select { width: 100%; padding: 14px 18px; margin-bottom: 15px; border-radius: 25px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; outline: none; font-family: 'Open Sans', sans-serif; background-color: white; }
 
-        .row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-        }
-
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .botones-container { display: flex; flex-direction: column; gap: 12px; }
 
-        .btn-principal {
-            width: 100%; 
-            background: black; 
-            color: white; 
-            border: none;
-            padding: 18px; 
-            border-radius: 30px; 
-            font-size: 16px; 
-            cursor: pointer;
-            font-family: 'Open Sans', sans-serif; 
-            font-weight: 700;
-        }
+        .btn-principal { width: 100%; background: black; color: white; border: none; padding: 18px; border-radius: 30px; font-size: 16px; cursor: pointer; font-family: 'Open Sans', sans-serif; font-weight: 700; }
+        .btn-secundario { width: 100%; background: white; color: #333; border: 1px solid #ccc; padding: 15px; border-radius: 30px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; font-family: 'Open Sans', sans-serif; }
 
-        .btn-secundario {
-            width: 100%; 
-            background: white; 
-            color: #333; 
-            border: 1px solid #ccc;
-            padding: 15px; 
-            border-radius: 30px; 
-            font-size: 14px; 
-            cursor: pointer;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px;
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        @media (max-width: 450px) {
-            .header-section h1 { font-size: 28px; }
-            .row { grid-template-columns: 1fr; gap: 0; }
-        }
+        @media (max-width: 450px) { .header-section h1 { font-size: 28px; } .row { grid-template-columns: 1fr; gap: 0; } }
     </style>
 </head>
 <body>
@@ -177,7 +82,7 @@
         </div>
 
         <label>función a integrar</label>
-        <input id="funcion" placeholder="Ej: x^2 + ln(x)" type="text" oninput="actualizarVistaPrevia()">
+        <input id="funcion" placeholder="Ej: ln(x) + x^2" type="text" oninput="actualizarVistaPrevia()">
 
         <div class="row">
             <div>
@@ -198,21 +103,12 @@
         </div>
 
         <div id="limites-container" class="row" style="display: none;">
-            <div>
-                <label>límite inferior (a)</label>
-                <input id="limA" placeholder="0" type="text" oninput="actualizarVistaPrevia()">
-            </div>
-            <div>
-                <label>límite superior (b)</label>
-                <input id="limB" placeholder="pi" type="text" oninput="actualizarVistaPrevia()">
-            </div>
+            <div><label>límite inferior</label><input id="limA" placeholder="0" type="text" oninput="actualizarVistaPrevia()"></div>
+            <div><label>límite superior</label><input id="limB" placeholder="pi" type="text" oninput="actualizarVistaPrevia()"></div>
         </div>
 
         <div class="botones-container">
-            <button onclick="calcularIntegral()" class="btn-principal">
-                Calcular Resultado
-            </button>
-
+            <button onclick="calcularIntegral()" class="btn-principal">Calcular Resultado</button>
             <button onclick="irAPasoAPaso()" class="btn-secundario">
                 <img src="https://cdn-icons-png.flaticon.com/512/2374/2374367.png" width="20">
                 Ver paso a paso
@@ -224,31 +120,18 @@
 </div>
 
 <script>
-// Normalización inteligente: No rompe integrales simples como 'x'
-function normalizar(expr) {
+// Normalización minimalista para evitar errores de sintaxis en 'x'
+function normalizarInput(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().trim();
-    
-    // Solo reemplazamos si el usuario no escribió log pero sí ln
-    e = e.replace(/ln/g, 'log'); 
+    // Solo reemplazamos ln por log para que la librería entienda log natural
+    e = e.replace(/ln/g, 'log');
     e = e.replace(/π/g, 'pi');
-    
-    // Multiplicación implícita solo donde sea estrictamente necesario
-    e = e.replace(/(\d)([a-z\(])/g, '$1*$2');
-    e = e.replace(/(\))(\d)/g, '$1*$2');
-    e = e.replace(/(\))([a-z\(])/g, '$1*$2');
-    
     return e;
 }
 
-// Función para forzar que el TeX muestre \ln en lugar de \log
-function formatResultTex(tex) {
-    return tex.replace(/\\log/g, '\\ln');
-}
-
 function toggleLimites() {
-    const tipo = document.getElementById('tipo').value;
-    document.getElementById('limites-container').style.display = (tipo === 'def') ? 'grid' : 'none';
+    document.getElementById('limites-container').style.display = (document.getElementById('tipo').value === 'def') ? 'grid' : 'none';
 }
 
 function actualizarVistaPrevia() {
@@ -264,17 +147,9 @@ function actualizarVistaPrevia() {
     }
 
     try {
-        let n = normalizar(input);
-        let fLatex = formatResultTex(nerdamer(n).toTeX());
-        if (tipo === 'indef') {
-            preview.innerHTML = `$$ \\int ${fLatex} \\, d${v} $$`;
-        } else {
-            const a = document.getElementById('limA').value || 'a';
-            const b = document.getElementById('limB').value || 'b';
-            const aTex = a !== 'a' ? nerdamer(normalizar(a)).toTeX() : 'a';
-            const bTex = b !== 'b' ? nerdamer(normalizar(b)).toTeX() : 'b';
-            preview.innerHTML = `$$ \\int_{${aTex}}^{${bTex}} ${fLatex} \\, d${v} $$`;
-        }
+        let n = normalizarInput(input);
+        let fTex = nerdamer(n).toTeX();
+        preview.innerHTML = (tipo === 'indef') ? `$$ \\int ${fTex} \\, d${v} $$` : `$$ \\int_{a}^{b} ${fTex} \\, d${v} $$`;
     } catch (e) { preview.innerHTML = `$$ \\dots $$`; }
     MathJax.typesetPromise([preview]);
 }
@@ -288,30 +163,24 @@ function calcularIntegral() {
     if (!input) return;
 
     try {
-        const f = normalizar(input);
+        const f = normalizarInput(input);
         
         if (tipo === 'indef') {
-            // Usamos nerdamer.integrate de forma directa para evitar errores de parseo
             let sol = nerdamer.integrate(f, v);
-            let resText = sol.text();
-
-            if (resText.includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Método no soportado localmente. <br>Usa <b>'Ver paso a paso'</b> para el resultado.</div>";
+            // Si el resultado es igual al input, la integral es muy compleja para el navegador
+            if (sol.text().includes('integrate')) {
+                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Integral compleja. Haz clic en <b>'Ver paso a paso'</b> para ver la solución detallada.</div>";
             } else {
-                let resTex = formatResultTex(sol.toTeX());
-                out.innerHTML = `$$ ${resTex} + C $$`;
+                out.innerHTML = `$$ ${sol.toTeX()} + C $$`;
             }
         } else {
-            const valA = normalizar(document.getElementById('limA').value);
-            const valB = normalizar(document.getElementById('limB').value);
-            if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
-            
-            let defSol = nerdamer(`defint(${f}, ${valA}, ${valB}, ${v})`);
-            let defTex = formatResultTex(defSol.toTeX());
-            out.innerHTML = `$$ = ${defTex} $$`;
+            const a = normalizarInput(document.getElementById('limA').value);
+            const b = normalizarInput(document.getElementById('limB').value);
+            let defSol = nerdamer(`defint(${f}, ${a}, ${b}, ${v})`);
+            out.innerHTML = `$$ = ${defSol.toTeX()} $$`;
         }
     } catch (e) { 
-        out.innerHTML = "<small style='color:#d93025'>Error: Revisa la expresión o los paréntesis.</small>"; 
+        out.innerHTML = "<small style='color:#d93025'>Error de sintaxis. Revisa los paréntesis.</small>"; 
     }
     MathJax.typesetPromise([out]);
 }
@@ -319,12 +188,9 @@ function calcularIntegral() {
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
-    if (f) {
-        window.open(`https://www.integral-calculator.com/?expr=${encodeURIComponent(f)}&variable=${v}`, '_blank');
-    }
+    if (f) window.open(`https://www.integral-calculator.com/?expr=${encodeURIComponent(f)}&variable=${v}`, '_blank');
 }
 
-// Inicialización
 actualizarVistaPrevia();
 </script>
 
