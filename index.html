@@ -10,8 +10,13 @@
     <script>
         window.MathJax = {
             tex: { 
-                inlineMath: [['$', '$']], 
-                displayMath: [['$$', '$$']]
+                inlineMath: [['$', '$'], ['\\(', '\\)']], 
+                displayMath: [['$$', '$$']],
+                // Macro obligatoria para que log se vea siempre como ln
+                macros: {
+                    log: '\\ln',
+                    ln: '\\ln'
+                }
             },
             options: { enableMenu: false }
         };
@@ -22,64 +27,18 @@
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 
-        body { 
-            background: white; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 10px; 
-            box-sizing: border-box;
-        }
-
-        .fade-in { 
-            opacity: 0; 
-            transform: translateY(20px); 
-            animation: fadeUp 0.8s ease forwards; 
-            width: 100%; 
-            max-width: 600px; 
-        }
+        body { background: white; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+        .fade-in { opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s ease forwards; width: 100%; max-width: 600px; }
         @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
-        .calculadora {
-            background: #F2F2F2; 
-            padding: 30px 20px; 
-            border-radius: 35px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-            box-sizing: border-box; 
-            width: 100%;
-        }
-
+        .calculadora { background: #F2F2F2; padding: 30px 20px; border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; width: 100%; }
         .header-section { text-align: center; margin-bottom: 20px; }
-        .header-section h1 { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 32px; 
-            margin: 0; 
-            font-weight: 600; 
-            text-transform: lowercase;
-        }
-        .header-section p { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 18px; 
-            margin: 5px 0; 
-            font-weight: 600;
-        }
+        .header-section h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin: 0; font-weight: 600; text-transform: lowercase; }
+        .header-section p { font-family: 'Playfair Display', serif; font-size: 18px; margin: 5px 0; font-weight: 600; }
 
-        #preview-container {
-            background: white; 
-            margin-bottom: 20px; 
-            padding: 20px;
-            border-radius: 20px; 
-            min-height: 70px; 
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid #eee;
-            overflow-x: auto; 
-        }
+        #preview-container { background: white; margin-bottom: 20px; padding: 20px; border-radius: 20px; min-height: 70px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; overflow-x: auto; }
 
-        /* DISTANCIA EXACTA DE 34PX SOLICITADA */
+        /* DISTANCIA DE 34PX SOLICITADA */
         #resultado {
             background: white; 
             margin-top: 34px; 
@@ -95,69 +54,16 @@
             color: #333;
         }
 
-        label { 
-            display: block; 
-            font-family: 'Open Sans', sans-serif;
-            font-size: 14px; 
-            color: #444; 
-            margin: 0 0 6px 12px; 
-            font-weight: 600; 
-        }
-        
-        input, select {
-            width: 100%; 
-            padding: 14px 18px; 
-            margin-bottom: 15px; 
-            border-radius: 25px;
-            border: 1px solid #ccc; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            outline: none;
-            font-family: 'Open Sans', sans-serif;
-            background-color: white;
-        }
+        label { display: block; font-family: 'Open Sans', sans-serif; font-size: 14px; color: #444; margin: 0 0 6px 12px; font-weight: 600; }
+        input, select { width: 100%; padding: 14px 18px; margin-bottom: 15px; border-radius: 25px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; outline: none; font-family: 'Open Sans', sans-serif; background-color: white; }
 
-        .row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-        }
-
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .botones-container { display: flex; flex-direction: column; gap: 12px; }
 
-        .btn-principal {
-            width: 100%; 
-            background: black; 
-            color: white; 
-            border: none;
-            padding: 18px; 
-            border-radius: 30px; 
-            font-size: 16px; 
-            cursor: pointer;
-            font-family: 'Open Sans', sans-serif; 
-            font-weight: 700;
-        }
+        .btn-principal { width: 100%; background: black; color: white; border: none; padding: 18px; border-radius: 30px; font-size: 16px; cursor: pointer; font-family: 'Open Sans', sans-serif; font-weight: 700; }
+        .btn-secundario { width: 100%; background: white; color: #333; border: 1px solid #ccc; padding: 15px; border-radius: 30px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; font-family: 'Open Sans', sans-serif; }
 
-        .btn-secundario {
-            width: 100%; 
-            background: white; 
-            color: #333; 
-            border: 1px solid #ccc;
-            padding: 15px; 
-            border-radius: 30px; 
-            font-size: 14px; 
-            cursor: pointer;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px;
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        @media (max-width: 450px) {
-            .header-section h1 { font-size: 28px; }
-            .row { grid-template-columns: 1fr; gap: 0; }
-        }
+        @media (max-width: 450px) { .header-section h1 { font-size: 28px; } .row { grid-template-columns: 1fr; gap: 0; } }
     </style>
 </head>
 <body>
@@ -174,7 +80,7 @@
         </div>
 
         <label>función a integrar</label>
-        <input id="funcion" placeholder="Ej: ln(x) o x^2" type="text" oninput="actualizarVistaPrevia()">
+        <input id="funcion" placeholder="Ej: ln(x) + 2x" type="text" oninput="actualizarVistaPrevia()">
 
         <div class="row">
             <div>
@@ -195,21 +101,12 @@
         </div>
 
         <div id="limites-container" class="row" style="display: none;">
-            <div>
-                <label>límite inferior</label>
-                <input id="limA" placeholder="0" type="text" oninput="actualizarVistaPrevia()">
-            </div>
-            <div>
-                <label>límite superior</label>
-                <input id="limB" placeholder="pi" type="text" oninput="actualizarVistaPrevia()">
-            </div>
+            <div><label>límite inferior</label><input id="limA" placeholder="0" type="text" oninput="actualizarVistaPrevia()"></div>
+            <div><label>límite superior</label><input id="limB" placeholder="pi" type="text" oninput="actualizarVistaPrevia()"></div>
         </div>
 
         <div class="botones-container">
-            <button onclick="calcularIntegral()" class="btn-principal">
-                Calcular Resultado
-            </button>
-
+            <button onclick="calcularIntegral()" class="btn-principal">Calcular Resultado</button>
             <button onclick="irAPasoAPaso()" class="btn-secundario">
                 <img src="https://cdn-icons-png.flaticon.com/512/2374/2374367.png" width="20">
                 Ver paso a paso
@@ -221,22 +118,33 @@
 </div>
 
 <script>
-// Algebrite usa 'log' para logaritmo natural, lo mapeamos correctamente
-function preparar(expr) {
+// Normalización de alta robustez
+function robustez(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().trim();
-    e = e.replace(/ln/g, 'log'); // Traducimos ln a log para el motor
+    
+    // Mapeo básico
+    e = e.replace(/ln/g, 'log');
+    e = e.replace(/π/g, 'pi');
+    
+    // Multiplicación implícita inteligente (evita romper nombres de funciones)
+    // 1. Números seguidos de letras: 2x -> 2*x
+    e = e.replace(/(\d)([a-z])/g, '$1*$2');
+    // 2. Paréntesis cerrados seguidos de apertura: (x)(y) -> (x)*(y)
+    e = e.replace(/\)\(/g, ')*(');
+    // 3. Letras seguidas de log/sin/etc: xlog(x) -> x*log(x)
+    e = e.replace(/([a-z])(log|sin|cos|tan|sqrt)/g, '$1*$2');
+    
     return e;
 }
 
-// Función para asegurar que el LaTeX final diga \ln y no \log
 function limpiarTex(tex) {
+    // Forzamos visualmente el LN en lugar de LOG
     return tex.replace(/\\log/g, '\\ln').replace(/log/g, '\\ln');
 }
 
 function toggleLimites() {
-    const tipo = document.getElementById('tipo').value;
-    document.getElementById('limites-container').style.display = (tipo === 'def') ? 'grid' : 'none';
+    document.getElementById('limites-container').style.display = (document.getElementById('tipo').value === 'def') ? 'grid' : 'none';
 }
 
 function actualizarVistaPrevia() {
@@ -252,15 +160,9 @@ function actualizarVistaPrevia() {
     }
 
     try {
-        const p = preparar(input);
+        const p = robustez(input);
         const texf = limpiarTex(Algebrite.run(`printlatex(${p})`));
-        if (tipo === 'indef') {
-            preview.innerHTML = `$$ \\int ${texf} \\, d${v} $$`;
-        } else {
-            const a = document.getElementById('limA').value || 'a';
-            const b = document.getElementById('limB').value || 'b';
-            preview.innerHTML = `$$ \\int_{${a}}^{${b}} ${texf} \\, d${v} $$`;
-        }
+        preview.innerHTML = (tipo === 'indef') ? `$$ \\int ${texf} \\, d${v} $$` : `$$ \\int_{a}^{b} ${texf} \\, d${v} $$`;
     } catch (e) { preview.innerHTML = `$$ \\dots $$`; }
     MathJax.typesetPromise([preview]);
 }
@@ -274,40 +176,39 @@ function calcularIntegral() {
     if (!input) return;
 
     try {
-        const expr = preparar(input);
+        const f = robustez(input);
         
         if (tipo === 'indef') {
-            // Comando de Algebrite para integral
-            const comando = `integral(${expr}, ${v})`;
+            const comando = `integral(${f}, ${v})`;
             const res = Algebrite.run(comando);
             
-            // Si no puede resolverla, devuelve la misma función
-            if (res === comando || res.includes('integral')) {
-                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Integral no elemental. Pulsa <b>'Ver paso a paso'</b>.</div>";
+            // Verificamos si realmente se integró (si no contiene la palabra integral)
+            if (res.includes('integral')) {
+                out.innerHTML = "<div style='font-size:14px; color:#666; text-align:center;'>Integral compleja. Usa <b>'Ver paso a paso'</b> para MathDF.</div>";
             } else {
                 const texRes = limpiarTex(Algebrite.run(`printlatex(${comando})`));
                 out.innerHTML = `$$ ${texRes} + C $$`;
             }
         } else {
-            const a = preparar(document.getElementById('limA').value);
-            const b = preparar(document.getElementById('limB').value);
-            if (!a || !b) { out.innerHTML = "Faltan límites"; return; }
-            
-            const defRes = Algebrite.run(`defint(${expr}, ${v}, ${a}, ${b})`);
-            const texDef = limpiarTex(Algebrite.run(`printlatex(defint(${expr}, ${v}, ${a}, ${b}))`));
+            const a = robustez(document.getElementById('limA').value);
+            const b = robustez(document.getElementById('limB').value);
+            const defRes = Algebrite.run(`defint(${f}, ${v}, ${a}, ${b})`);
+            const texDef = limpiarTex(Algebrite.run(`printlatex(defint(${f}, ${v}, ${a}, ${b}))`));
             out.innerHTML = `$$ = ${texDef} $$`;
         }
     } catch (e) { 
-        out.innerHTML = "<small style='color:#d93025'>Error: Revisa los paréntesis o la variable.</small>"; 
+        out.innerHTML = "<small style='color:#d93025'>Revisa los paréntesis o la expresión.</small>"; 
     }
     MathJax.typesetPromise([out]);
 }
 
+// REDIRECCIÓN A MATHDF RESTAURADA
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
     if (f) {
-        window.open(`https://www.integral-calculator.com/?expr=${encodeURIComponent(f)}&variable=${v}`, '_blank');
+        // Formato de URL de MathDF
+        window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&var=${v}`, '_blank');
     }
 }
 
