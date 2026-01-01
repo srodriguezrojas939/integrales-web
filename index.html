@@ -79,9 +79,9 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Espaciado solicitado del visor de respuesta */
+        /* Espaciado solicitado entre el visor y los botones */
         #resultado {
-            margin-top: 45px; 
+            margin-top: 50px; 
         }
 
         label { 
@@ -214,7 +214,7 @@ function normalizar(expr) {
     if (!expr) return "";
     let e = expr.toLowerCase().replace(/\s+/g, '');
     e = e.replace(/π/g, 'pi');
-    e = e.replace(/ln/g, 'log');
+    e = e.replace(/ln/g, 'log'); // Nerdamer usa log como logaritmo natural
     return e;
 }
 
@@ -262,11 +262,12 @@ function calcularIntegral() {
         const f = normalizar(input);
         
         if (tipo === 'indef') {
-            // Se usa el constructor principal para asegurar compatibilidad total
-            let sol = nerdamer('integrate(' + f + ',' + v + ')');
+            // Usamos la función nativa directamente para evitar errores de parseo de strings complejos
+            let sol = nerdamer.integrate(f, v);
             
+            // Verificamos si Nerdamer devolvió la misma función (significa que no pudo integrarla)
             if (sol.toString().includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Función compleja. Prueba el botón <b>'Ver paso a paso'</b>.</div>";
+                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Esta integral requiere métodos avanzados. <br>Usa <b>'Ver paso a paso'</b> para la solución.</div>";
             } else {
                 out.innerHTML = `$$ ${sol.toTeX()} + C $$`;
             }
@@ -275,12 +276,12 @@ function calcularIntegral() {
             const valB = normalizar(document.getElementById('limB').value.trim());
             if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
             
-            const resDef = nerdamer('defint(' + f + ',' + valA + ',' + valB + ',' + v + ')');
+            const resDef = nerdamer.defint(f, valA, valB, v);
             out.innerHTML = `$$ = ${resDef.toTeX()} $$`;
         }
         MathJax.typesetPromise([out]);
     } catch (e) { 
-        out.innerHTML = "<small style='color:red'>Error: Revisa los paréntesis o la sintaxis</small>"; 
+        out.innerHTML = "<small style='color:red'>Error: Revisa la sintaxis o los paréntesis</small>"; 
     }
 }
 
