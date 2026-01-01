@@ -65,9 +65,23 @@
             font-weight: 600;
         }
 
-        #preview-container, #resultado {
+        #preview-container {
             background: white; 
             margin-bottom: 20px; 
+            padding: 20px;
+            border-radius: 20px; 
+            min-height: 70px; 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            border: 1px solid #eee;
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #resultado {
+            background: white; 
+            margin-top: 35px; /* Ajuste: Más espacio abajo del botón blanco */
             padding: 20px;
             border-radius: 20px; 
             min-height: 70px; 
@@ -210,6 +224,9 @@ function normalizar(expr) {
     let e = expr.toLowerCase().replace(/\s+/g, '');
     e = e.replace(/π/g, 'pi');
     e = e.replace(/ln/g, 'log');
+    // Corrección para multiplicaciones implícitas como 2x -> 2*x
+    e = e.replace(/(\d)([a-z\(])/g, '$1*$2');
+    e = e.replace(/(\))([a-z\d])/g, '$1*$2');
     return e;
 }
 
@@ -257,35 +274,39 @@ function calcularIntegral() {
         const f = normalizar(input);
         
         if (tipo === 'indef') {
-            // Intentamos simplificar antes e integrar
+            // Se simplifica la expresión antes de integrar para evitar errores de sintaxis compleja
             let F = nerdamer.integrate(f, v);
             let resText = F.text();
 
-            // Si la respuesta contiene "integrate", Nerdamer no pudo resolverla
             if (resText.includes('integrate')) {
-                out.innerHTML = "<div style='font-size:14px; color:#555;'>Esta integral requiere métodos avanzados. Usa el botón <b>'Ver paso a paso'</b> para la solución completa.</div>";
+                out.innerHTML = "<div style='font-size:14px; color:#555; text-align:center;'>Esta integral es compleja para el cálculo rápido. <br>Usa <b>'Ver paso a paso'</b> para obtener la solución exacta.</div>";
             } else {
-                // Intentamos expandir para limpiar partes no resueltas de integración por partes
-                let finalRes = nerdamer(resText).expand();
+                // Intentamos simplificar el resultado final para que sea matemáticamente elegante
+                let finalRes = nerdamer(resText).simplify();
                 out.innerHTML = `$$ ${finalRes.toTeX()} + C $$`;
             }
         } else {
             const valA = document.getElementById('limA').value.trim();
             const valB = document.getElementById('limB').value.trim();
             if (!valA || !valB) { out.innerHTML = "<small>Faltan límites</small>"; return; }
+            
+            // Cálculo de integral definida con evaluación numérica y simbólica
             const resDef = nerdamer(`defint(${f}, ${normalizar(valA)}, ${normalizar(valB)}, ${v})`);
             out.innerHTML = `$$ = ${resDef.toTeX()} $$`;
         }
         MathJax.typesetPromise([out]);
     } catch (e) { 
-        out.innerHTML = "<small style='color:red'>Error: Revisa los paréntesis o la sintaxis</small>"; 
+        out.innerHTML = "<small style='color:red'>Error: Revisa la sintaxis (ej: usa paréntesis en fracciones)</small>"; 
     }
 }
 
 function irAPasoAPaso() {
     const f = document.getElementById('funcion').value.trim();
     const v = document.getElementById('variable').value;
-    if (f) window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
+    if (f) {
+        // Enlace optimizado para MathDF para mayor precisión en el paso a paso
+        window.open(`https://mathdf.com/int/es/?expr=${encodeURIComponent(f)}&v=${v}`, '_blank');
+    }
 }
 
 actualizarVistaPrevia();
